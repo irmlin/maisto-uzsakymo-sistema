@@ -8,21 +8,26 @@ import reportWebVitals from './reportWebVitals';
 import Profile from "./Pages/Profile";
 import Menu from "./Pages/Menu";
 import { css, Global } from "@emotion/react";
+import {UserContextProvider} from "./Contexts/UserContext";
+import OrderHistory from './Pages/OrderHistory';
+import MainPageContainer from './Components/MainPageContainer';
 
 ReactDOM.render(
   <React.StrictMode>
-    <Router>
-      <Routes>
-        {/* <Route exact path="/login" component={Login} /> */}
-        {/* <Route exact path="/project" component={Project} /> */}
-        <Route exact path="/profile" element={<Profile/>} />
-        <Route path="/" element={<App/>} />
-        <Route path="/menu/:restaurantId" element={<Menu/>} />
-        <Route path="/login" element={<Login/>} />
-        <Route path="/register" element={<Register/>} />
-      </Routes>
-    </Router>
-
+    <UserContextProvider>
+      <MainPageContainer>
+        <Router>
+          <Routes>
+            <Route exact path="/profile" element={<Profile/>} />
+            <Route path="/" element={<App/>} />
+            <Route path="/menu/:restaurantId" element={<Menu/>} />
+            <Route path="/login" element={<Login/>} />
+            <Route path="/register" element={<Register/>} />
+            <Route path="/order_history" element={<OrderHistory/>} />
+          </Routes>
+        </Router>
+      </MainPageContainer>
+    </UserContextProvider>
     <Global
         styles={css`
           @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap");

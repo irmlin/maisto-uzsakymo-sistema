@@ -43,3 +43,36 @@ export const DISTRICTS_CITIES = Object.freeze({
     DISTRICT_NAME: "Vilniaus", CITIES: ["Vilnius", "Elektrėnai", "Trakai"]
   },
 });
+
+export const COURIER_STATES = Object.freeze({
+  OFFLINE: "Atsijungęs",
+  ONLINE: "Prisijungęs",
+  WAITING_FOR_ORDER: "Laukia užsakymo",
+  BUSY: "Atlieka užsakymą",
+});
+
+export const COURIER_STATES_FOR_COURIER = Object.freeze({
+  ONLINE: {
+    value: COURIER_STATES.ONLINE,
+    text: "Pristatymų pasiūlymų dabar gauti nenoriu"
+  },
+  WAITING_FOR_ORDER: {
+    value: COURIER_STATES.WAITING_FOR_ORDER,
+    text: "Noriu gauti pristatymų pasiūlymus"
+  }
+});
+
+export const ORDER_STATES = Object.freeze({
+  INITIALIZED: "Sudaromas",
+  PAYED: "Apmokėtas",
+  IN_PROGRESS: "Vykdomas",
+  FOOD_TAKEN: "Maistas paimtas iš restorano",
+  COMPLETED: "Užbaigtas",
+  CANCELLED: "Atšauktas"
+});
+
+export const ORDER_STATES_FOR_COURIER = Object.freeze({
+  IN_PROGRESS: "Vykdomas",
+  FOOD_TAKEN: "Maistas paimtas iš restorano",
+  COMPLETED: "Pristatytas"
+});

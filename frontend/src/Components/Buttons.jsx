@@ -18,11 +18,15 @@ const Buttons = () => {
       >
         Restoranai
       </StyledButton>
-
       <StyledButton
         onClick={() => navigate("/profile")}
       >
         Profilis
+      </StyledButton>
+      <StyledButton
+        onClick={() => navigate("/order_history")}
+      >
+        Užsakymų istorija
       </StyledButton>
     </div>
   );

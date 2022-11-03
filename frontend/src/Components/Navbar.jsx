@@ -2,11 +2,22 @@
 /**@jsx jsx */
 import { css, jsx } from "@emotion/react";
 import Buttons from "./Buttons";
+import {MenuItem, Select} from "@mui/material";
+import { UserContext } from "../Contexts/UserContext";
+import { useContext } from "react";
+import { ROLES } from "../Enums/Enums";
+import DEFAULT_USERS from "../TempData/UserData";
 
 const Navbar = () => {
   const breakpoints = [576, 768, 992, 1200];
-
   const mq = breakpoints.map((bp) => `@media (max-width: ${bp}px)`);
+  const { userRole, setUserRole, setUserData } = useContext(UserContext);
+
+  const onUserRoleChange = (event) => {
+    setUserRole(event.target.value);
+    const roleKey = Object.keys(ROLES).find(key => ROLES[key] === event.target.value);
+    setUserData(DEFAULT_USERS[roleKey]);
+  }
 
   return (
     <div
@@ -53,9 +64,22 @@ const Navbar = () => {
       <Buttons
         className="Buttons"
       />
-      <div>
+      <div style={{width: "10%"}}>
         <a href={"/login"}><h3 className="dwu">Prisijungti</h3></a>
         <a href={"/register"}><h3 className="dwu">Registruotis</h3></a>
+        <Select
+          size="small"
+          id="temp-role-select"
+          value={userRole}
+          label="Peržiūrėti kaip"
+          onChange={onUserRoleChange}
+      >
+          {
+              Object.values(ROLES).map(item => (
+                  <MenuItem key={item} value={item}>{item}</MenuItem>
+              ))
+          }
+        </Select>
       </div>
     </div>
   );
