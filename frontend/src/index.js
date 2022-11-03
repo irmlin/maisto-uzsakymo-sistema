@@ -5,7 +5,7 @@ import App from './Pages/App';
 import Login from './Pages/Login';
 import Register from './Pages/Register';
 import reportWebVitals from './reportWebVitals';
-import Profile from "./Components/Profile";
+import Profile from "./Pages/Profile";
 import Menu from "./Pages/Menu";
 import { css, Global } from "@emotion/react";
 

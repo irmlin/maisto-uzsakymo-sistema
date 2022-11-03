@@ -7,7 +7,9 @@ import {TextField, MenuItem, InputLabel, Select} from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
-import {ROLES, TRANSPORT_TYPES, DISTRICTS} from "../Enums/Enums";
+import {ROLES, TRANSPORT_TYPES, DISTRICTS_CITIES} from "../Enums/Enums";
+import Navbar from "../Components/Navbar";
+import SimplePageContent from "../Components/SimplePageContent";
 
 
 export default function Register() {
@@ -22,8 +24,9 @@ export default function Register() {
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [restaurantName, setRestaurantName] = useState("");
-  const [cityName, setCityName] = useState("");
-  const [district, setDistrict] = useState("");
+  const [transport, setTransport] = useState(TRANSPORT_TYPES.CAR)
+  const [cityName, setCityName] = useState(DISTRICTS_CITIES.VILNIUS.CITIES[0]);
+  const [district, setDistrict] = useState(DISTRICTS_CITIES.VILNIUS.DISTRICT_NAME);
   const [address, setAddress] = useState("");
   const [openedFrom, setOpenedFrom] = useState("");
   const [closedFrom, setClosedFrom] = useState("");
@@ -38,6 +41,7 @@ export default function Register() {
     dateOfBirth: true,
     phoneNumber: true,
     restaurantName: false,
+    transport: false,
     cityName: false,
     district: false,
     address: false,
@@ -49,6 +53,17 @@ export default function Register() {
   const [errorText, setErrorText] = React.useState("");
 
   const navigate = useNavigate();
+  const rolesWithoutAdmin = (({ CLIENT, COURIER, RESTAURANT }) => ({ CLIENT, COURIER, RESTAURANT }))(ROLES)
+
+  function emptyFields() {
+    if (selectedRole === ROLES.CLIENT) {
+      return !firstName || !lastName || !email || !userName || !password || !personalId || !dateOfBirth || !phoneNumber;
+    } else if (selectedRole === ROLES.COURIER) {
+      return !firstName || !lastName || !email || !userName || !password || !personalId || !dateOfBirth || !phoneNumber || !transport || !cityName || !district;
+    } else {
+      return !email || !userName || !password || !phoneNumber || !restaurantName || !cityName || !district || !address || !openedFrom || !closedFrom;
+    }
+  }
 
   const onRoleSelectChange = (event) => {
     setSelectedRole(event.target.value);
@@ -63,10 +78,11 @@ export default function Register() {
             dateOfBirth: true,
             phoneNumber: true,
             restaurantName: false,
+            transport: false,
             cityName: false,
             district: false,
             address: false,
-            openenFrom: false,
+            openedFrom: false,
             closedFrom: false});
     } else if (event.target.value === ROLES.COURIER) {
         setVisibleFields({...visibleFields,     
@@ -79,10 +95,11 @@ export default function Register() {
             dateOfBirth: true,
             phoneNumber: true,
             restaurantName: false,
+            transport: true,
             cityName: true,
             district: true,
             address: false,
-            openenFrom: false,
+            openedFrom: false,
             closedFrom: false});
     } else {
         setVisibleFields({...visibleFields,     
@@ -95,10 +112,11 @@ export default function Register() {
             dateOfBirth: false,
             phoneNumber: false,
             restaurantName: true,
+            transport: false,
             cityName: true,
             district: true,
             address: true,
-            openenFrom: true,
+            openedFrom: true,
             closedFrom: true});
     }
     
@@ -106,6 +124,13 @@ export default function Register() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (emptyFields()) {
+      setErrorOpen(true);
+      setErrorText("Užpildykite visus formos laukus!");
+      return;
+    }
+    setErrorOpen(false);
+    setErrorText("");
     console.log("submitted");
     // const response = await login(email, password);
     // if (response) {
@@ -123,6 +148,9 @@ export default function Register() {
   };
 
   return (
+    <div>
+      <Navbar/>
+      <SimplePageContent>
         <Box
           sx={{
             width: "40%",
@@ -143,16 +171,8 @@ export default function Register() {
             component="form"
             onSubmit={handleSubmit}
             noValidate
-            sx={{ mt: 0 }}
+            sx={{ mt: 5, width: "100%" }}
           >
-            {isErrorOpen && (
-              <Alert
-                severity="error"
-                sx={{ horizontal: "center", width: "100%" }}
-              >
-                {errorText}
-              </Alert>
-            )}
             <InputLabel id="role-select-label">Vartotojo rolė</InputLabel>
             <Select
                 labelId="role-select-label"
@@ -163,7 +183,7 @@ export default function Register() {
                 onChange={onRoleSelectChange}
             >
                 {
-                    Object.entries(ROLES).map(([key, role]) => (
+                    Object.entries(rolesWithoutAdmin).map(([key, role]) => (
                         <MenuItem key={role} value={role}>{role}</MenuItem>
                     ))
                 }
@@ -181,7 +201,7 @@ export default function Register() {
               onChange={event => setEmail(event.target.value)}
               value={email}
             />
-            {/* <TextField
+            <TextField
               margin="normal"
               sx={{display: visibleFields.firstName ? "block" : "none"}}
               required
@@ -252,6 +272,7 @@ export default function Register() {
               id="dateofbirth"
               autoComplete="off"
               onChange={event => setDateOfBirth(event.target.value)}
+              InputLabelProps={{ shrink: true }}  
               value={dateOfBirth}
             />
             <TextField
@@ -266,19 +287,7 @@ export default function Register() {
               onChange={event => setRestaurantName(event.target.value)}
               value={restaurantName}
             />
-            <TextField
-            sx={{display: visibleFields.cityName ? "block" : "none"}}
-              margin="normal"
-              required
-              fullWidth
-              name="city"
-              label="Miestas"
-              id="city"
-              autoComplete="off"
-              onChange={event => setCityName(event.target.value)}
-              value={cityName}
-            />
-            <InputLabel id="district-select-label">Apskritis</InputLabel>
+            <InputLabel sx={{display: visibleFields.district ? "block" : "none"}} id="district-select-label">Apskritis</InputLabel>
             <Select
                 labelId="district-select-label"
                 sx={{display: visibleFields.district ? "block" : "none"}}
@@ -286,11 +295,47 @@ export default function Register() {
                 id="district-select"
                 value={district}
                 label="Pasirinkite Apskritį"
-                onChange={event => setDistrict(event.target.value)}
+                onChange={event => 
+                    {
+                      setDistrict(event.target.value);
+                      setCityName(Object.values(DISTRICTS_CITIES).find(item => item.DISTRICT_NAME === event.target.value).CITIES[0])
+                  }}
             >
                 {
-                    Object.entries(DISTRICTS).map(([key, role]) => (
-                        <MenuItem key={role} value={role}>{role}</MenuItem>
+                    Object.values(DISTRICTS_CITIES).map(item => (
+                        <MenuItem key={item.DISTRICT_NAME} value={item.DISTRICT_NAME}>{item.DISTRICT_NAME}</MenuItem>
+                    ))
+                }
+            </Select>
+            <InputLabel sx={{display: visibleFields.cityName ? "block" : "none"}} id="city-select-label">Miestas</InputLabel>
+            <Select
+                labelId="city-select-label"
+                sx={{display: visibleFields.cityName ? "block" : "none"}}
+                fullWidth
+                id="city-select"
+                value={cityName}
+                label="Pasirinkite Miestą"
+                onChange={event => setCityName(event.target.value)}
+            >
+                {
+                    Object.values(DISTRICTS_CITIES).find(item => item.DISTRICT_NAME === district).CITIES.map(city => (
+                        <MenuItem key={city} value={city}>{city}</MenuItem>
+                    ))
+                }
+            </Select>
+            <InputLabel sx={{display: visibleFields.transport ? "block" : "none"}} id="transport-select-label">Transporto priemonė</InputLabel>
+            <Select
+                labelId="transport-select-label"
+                sx={{display: visibleFields.transport ? "block" : "none"}}
+                fullWidth
+                id="transport-select"
+                value={transport}
+                label="Pasirinkite Transporto Priemonę"
+                onChange={event => setTransport(event.target.value)}
+            >
+                {
+                    Object.values(TRANSPORT_TYPES).map(item => (
+                        <MenuItem key={item} value={item}>{item}</MenuItem>
                     ))
                 }
             </Select>
@@ -342,17 +387,26 @@ export default function Register() {
               autoComplete="off"
               onChange={event => setPassword(event.target.value)}
               value={password}
-            /> */}
+            />
+            {isErrorOpen && (
+              <Alert
+                severity="error"
+                sx={{ horizontal: "center", width: "100%" }}
+              >
+                {errorText}
+              </Alert>
+            )}
             <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
-              disabled={!email || !password}
             >
               Registruotis
             </Button>
           </Box>
         </Box>
+      </SimplePageContent>
+    </div>
   );
 }

@@ -1,5 +1,5 @@
-import Navbar from "./Navbar";
-import SimplePageContent from "./SimplePageContent";
+import Navbar from "../Components/Navbar";
+import SimplePageContent from "../Components/SimplePageContent";
 
 export default function Profile ({profileData}) {
     
