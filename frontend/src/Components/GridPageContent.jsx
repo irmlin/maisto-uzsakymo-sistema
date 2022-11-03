@@ -36,7 +36,7 @@ const GridPageContent = ({children}) => {
           }
         }
 
-        .menu-header {
+        .header {
           text-align: center;
           padding-bottom: 20px;
         }

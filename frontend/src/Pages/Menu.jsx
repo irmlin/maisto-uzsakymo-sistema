@@ -22,7 +22,7 @@ const Menu = () => {
     <>
     <Navbar/>
       <GridPageContent>
-        <motion.h2 className="menu-header">
+        <motion.h2 className="header">
           {selectedRestaurant.name}
         </motion.h2>
         <motion.div className="grid">

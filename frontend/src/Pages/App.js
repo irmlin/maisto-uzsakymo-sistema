@@ -11,7 +11,7 @@ function App() {
       <Navbar/>
 
       <GridPageContent>
-        <motion.h2 className="menu-header">
+        <motion.h2 className="header">
           Restoranų sąrašas
         </motion.h2>
         <Restaurants restaurantData={restaurantData}/>

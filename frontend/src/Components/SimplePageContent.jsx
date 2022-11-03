@@ -23,6 +23,10 @@ const SimplePageContent = ({children}) => {
         padding: 40px 20px;
         background: #fff;
         border-radius: 50px;
+        .header {
+          text-align: center;
+          padding-bottom: 20px;
+        }
       `}
     >
       {children}
