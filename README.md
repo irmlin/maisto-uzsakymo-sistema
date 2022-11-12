@@ -1,4 +1,4 @@
-install needed node modules by running ```npm install``` in ./frontend directory
+install needed node modules by running ```npm install``` in ```./frontend``` directory
 
 for example
 
