@@ -3,3 +3,5 @@ install needed node modules by running ```npm install``` in ```./frontend``` dir
 for example
 
 ```npm install @mui/material @emotion/react @emotion/styled```
+
+Run project with ```npm start```
