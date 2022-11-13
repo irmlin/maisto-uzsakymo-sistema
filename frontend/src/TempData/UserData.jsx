@@ -13,9 +13,15 @@ const DEFAULT_USERS = {
     password: "sadasdas",
     state: COURIER_STATES.WAITING_FOR_ORDER
   },
-CLIENT: {
-
-  },
+  CLIENT: {
+    name: "Arturka",
+    lastName: "Geriausias",
+    birthDate: new Date("1999-02-02"),
+    phoneNumber: "860000002",
+    email: "arturka@mail.com",
+    userName: "turia",
+    password: "turia123" 
+    },
 RESTAURANT: {
 
   },

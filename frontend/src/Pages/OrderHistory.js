@@ -92,6 +92,68 @@ export default function OrderHistory () {
                         </>
                     )
                 }
+                {
+                    userRole === ROLES.CLIENT && (
+                        <>
+                          <Table>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>
+                                  Numeris
+                                </TableCell>
+                                <TableCell>
+                                  Būsena
+                                </TableCell>
+                                <TableCell>
+                                  Data
+                                </TableCell>
+                                <TableCell>
+                                  Kaina
+                                </TableCell>
+                                <TableCell>
+                                  Restoranas
+                                </TableCell>
+                                <TableCell>
+                                  Restorano adresas
+                                </TableCell>
+                                <TableCell>
+                                  Pristatymo adresas
+                                </TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {
+                                OrderData.map(order => (
+                                  <TableRow key={order.orderNumber}>
+                                    <TableCell>
+                                      {order.orderNumber}
+                                    </TableCell>
+                                    <TableCell>
+                                      {order.orderState}
+                                    </TableCell>
+                                    <TableCell>
+                                    {order.orderDate.toLocaleString()}
+                                    </TableCell>
+                                    <TableCell>
+                                    {order.orderPrice}
+                                    </TableCell>
+                                    <TableCell>
+                                    {order.restaurantName}
+                                    </TableCell>
+                                    <TableCell>
+                                    {order.restaurantAddress}
+                                    </TableCell>
+                                    <TableCell>
+                                    {order.recipientAddress}
+                                    </TableCell>
+                                  </TableRow>
+                                ))
+                              }
+                            </TableBody>
+                          </Table>
+                        </>
+                    )
+                }
             </SimplePageContent>
         </div>
     );
