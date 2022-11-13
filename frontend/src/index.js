@@ -11,6 +11,8 @@ import { css, Global } from "@emotion/react";
 import {UserContextProvider} from "./Contexts/UserContext";
 import OrderHistory from './Pages/OrderHistory';
 import MainPageContainer from './Components/MainPageContainer';
+import Dishes from './Pages/Dishes';
+import Dish from './Pages/Dish';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -24,6 +26,8 @@ ReactDOM.render(
             <Route path="/login" element={<Login/>} />
             <Route path="/register" element={<Register/>} />
             <Route path="/order_history" element={<OrderHistory/>} />
+            <Route path="/dishes" element={<Dishes/>} />
+            <Route path="/dish" element={<Dish/>} />
           </Routes>
         </Router>
       </MainPageContainer>

@@ -17,7 +17,10 @@ CLIENT: {
 
   },
 RESTAURANT: {
-
+    name: "Restoranas",
+    address: "Pašilės g.1, Kaunas",
+    o_time:"08:00",
+    c_time:"22:00"
   },
 ADMINISTRATOR: {
 
