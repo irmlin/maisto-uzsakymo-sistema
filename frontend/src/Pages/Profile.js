@@ -68,6 +68,70 @@ export default function Profile () {
                             </div>
                         </>
                     )
+
+                    
+                }
+                {
+                    userRole === ROLES.RESTAURANT && (
+                        <>
+                            <div>
+                                <b>Pavadinimas: </b>
+                                <input type="text" value={userData.name} />
+                                
+                            </div>
+                            <div>
+                                <b>Adresas: </b>
+                                <input type="text" value={userData.address} />
+                            </div>
+                            <div>
+                                <b>Atidarymo laikas: </b>
+                                <input type="text" value={userData.o_time} />
+                            </div>
+                            <div>
+                                <b>Uždarymo laikas: </b>
+                                <input type="text" value={userData.c_time} />
+                            </div>
+                            <div>
+                                <Button
+                                    type="submit"
+                                    size="small"
+                                    variant="contained"
+                                    sx={{ ml: 2}}
+                                    >
+                                    Išsaugoti
+                                </Button>                                
+                            </div>
+                        </>
+                    )
+
+                    
+                }
+{
+                    userRole === ROLES.CLIENT && (
+                        <>
+                        
+                            <div>
+                                <b>Vartotojo vardas: </b>{userData.userName}
+                            </div>
+                            <div>
+                                <b><label for="address">Pristatymo adresas: </label></b>
+                                <input 
+                                type="text" 
+                                id="address" 
+                                name="adresas" 
+                                placeholder="Įveskite pristatymo adresą..">
+                                </input>
+                                <Button
+                                    type="submit"
+                                    size="small"
+                                    variant="contained"
+                                    sx={{ ml: 2}}
+                                    >
+                                    Išsaugoti
+                                </Button>
+                            </div>
+                        </>
+                    )
                 }
             </SimplePageContent>
         </div>

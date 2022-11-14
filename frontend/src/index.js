@@ -22,6 +22,9 @@ import CouriersList from './Pages/CouriersList';
 import SuppliersList from './Pages/SuppliersList';
 import EditCourierAgreement from './Pages/EditCourierAgreement';
 import EditSupplierAgreement from './Pages/EditSupplierAgreement';
+import Dishes from './Pages/Dishes';
+import Dish from './Pages/Dish';
+import DishEdit from './Pages/DishEdit';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -35,6 +38,9 @@ ReactDOM.render(
             <Route path="/login" element={<Login/>} />
             <Route path="/register" element={<Register/>} />
             <Route path="/order_history" element={<OrderHistory/>} />
+            <Route path="/dishes" element={<Dishes/>} />
+            <Route path="/dish" element={<Dish/>} />
+            <Route path="/dishedit" element={<DishEdit/>} />
             <Route path="/newCouriers" element={<NewCourierData/>} />
             <Route path="/newSuppliers" element={<NewSupplierData/>} />
             <Route path="/ApproveCourier/:courierId" element={<ApproveCourier/>} />

@@ -22,10 +22,17 @@ const Buttons = () => {
       >
         Restoranai
       </StyledButton>
+      
       { userRole !== ROLES.ADMINISTRATOR && <StyledButton
         onClick={() => navigate("/profile")}
       >
         Profilis
+      </StyledButton>
+      }
+      { userRole === ROLES.RESTAURANT && <StyledButton
+        onClick={() => navigate("/dishes")}
+      >
+        Patiekalai
       </StyledButton>
       }
       { userRole !== ROLES.ADMINISTRATOR && <StyledButton
@@ -76,6 +83,8 @@ const Buttons = () => {
         Tiekėjų sąrašas
       </StyledButton>
       }
+
+      
 
     </div>
   );
