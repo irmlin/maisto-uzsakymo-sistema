@@ -17,6 +17,10 @@ export default function Dishes () {
         navigate("/dish");
     }
 
+    const navigateEdit = () => {
+        navigate("/dishedit");
+    }
+
     return (
         <div>
             <Navbar/>
@@ -31,7 +35,7 @@ export default function Dishes () {
                         </motion.h2>
                         <div>
                             <Button
-                            onClick={navigateCreate}
+                                onClick={navigateCreate}
                                 type="submit"
                                 size="large"
                                 variant="contained"
@@ -79,19 +83,12 @@ export default function Dishes () {
                                     <TableCell>
                                     {meal.vegetarian.toString()}
                                     </TableCell>
-                                    <TableCell>                                    
-                                    <Button
-                                    type="submit"
-                                    size="small"
-                                    variant="contained"
-                                    sx={{ ml: 2}}
-                                    >
-                                    Peržiūrėti
-                                    </Button>
-                                    </TableCell>
+
+                                    
                                     
                                     <TableCell>
                                     <Button
+                                    onClick={navigateEdit}
                                     type="submit"
                                     size="small"
                                     variant="contained"

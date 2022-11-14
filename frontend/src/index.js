@@ -13,6 +13,7 @@ import OrderHistory from './Pages/OrderHistory';
 import MainPageContainer from './Components/MainPageContainer';
 import Dishes from './Pages/Dishes';
 import Dish from './Pages/Dish';
+import DishEdit from './Pages/DishEdit';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -28,6 +29,7 @@ ReactDOM.render(
             <Route path="/order_history" element={<OrderHistory/>} />
             <Route path="/dishes" element={<Dishes/>} />
             <Route path="/dish" element={<Dish/>} />
+            <Route path="/dishedit" element={<DishEdit/>} />
           </Routes>
         </Router>
       </MainPageContainer>

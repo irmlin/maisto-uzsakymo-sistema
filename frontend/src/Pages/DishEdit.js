@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { COURIER_STATES_FOR_COURIER, ROLES, TRANSPORT_TYPES } from "../Enums/Enums";
 import { Button, MenuItem, Select } from "@mui/material";
 
-export default function Dish () {
+export default function DishEdit () {
     
     const { userRole, userData, setUserData } = useContext(UserContext);
 
@@ -19,7 +19,7 @@ export default function Dish () {
                     userRole === ROLES.RESTAURANT && (
                         <>
                             <motion.h2 className="header">
-                                Patiekalo sukūrimo langas
+                                Patiekalo redagavimo langas
                             </motion.h2>
                             <div>
                                 <b>Pavadinimas: </b>
@@ -46,7 +46,7 @@ export default function Dish () {
                                     variant="contained"
                                     sx={{ ml: 2}}
                                     >
-                                    Pridėti
+                                    Redaguoti
                                 </Button>                                
                             </div>
                         </>
