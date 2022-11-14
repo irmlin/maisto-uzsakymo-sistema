@@ -17,12 +17,12 @@ const Buttons = () => {
         display: flex;
       `}
     >
-      { userRole !== ROLES.RESTAURANT && <StyledButton
+      <StyledButton
         onClick={() => navigate("/")}
       >
         Restoranai
       </StyledButton>
-      }
+      
       <StyledButton
         onClick={() => navigate("/profile")}
       >
