@@ -11,6 +11,17 @@ import { css, Global } from "@emotion/react";
 import {UserContextProvider} from "./Contexts/UserContext";
 import OrderHistory from './Pages/OrderHistory';
 import MainPageContainer from './Components/MainPageContainer';
+import NewCourierData from './Pages/NewCouriers';
+import NewSupplierData from './Pages/NewSuppliers';
+import ApproveCourier from './Pages/ApproveCourier';
+import ApproveSupplier from './Pages/ApproveSupplier';
+import ClientsReport from './Pages/ClientReport';
+import CouriersReport from './Pages/CourierReport';
+import SuppliersReport from './Pages/SupplierReport';
+import CouriersList from './Pages/CouriersList';
+import SuppliersList from './Pages/SuppliersList';
+import EditCourierAgreement from './Pages/EditCourierAgreement';
+import EditSupplierAgreement from './Pages/EditSupplierAgreement';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -24,6 +35,18 @@ ReactDOM.render(
             <Route path="/login" element={<Login/>} />
             <Route path="/register" element={<Register/>} />
             <Route path="/order_history" element={<OrderHistory/>} />
+            <Route path="/newCouriers" element={<NewCourierData/>} />
+            <Route path="/newSuppliers" element={<NewSupplierData/>} />
+            <Route path="/ApproveCourier/:courierId" element={<ApproveCourier/>} />
+            <Route path="/ApproveSupplier/:supplierId" element={<ApproveSupplier/>} />
+            <Route path="/ClientsReports" element={<ClientsReport/>} />
+            <Route path="/CouriersReports" element={<CouriersReport/>} />
+            <Route path="/SuppliersReports" element={<SuppliersReport/>} />
+            <Route path="/CouriersList" element={<CouriersList/>} />
+            <Route path="/SuppliersList" element={<SuppliersList/>} />
+            <Route path="/EditCourier/:courierId" element={<EditCourierAgreement/>} />
+            <Route path="/EditSupplier/:supplierId" element={<EditSupplierAgreement/>} />
+            
           </Routes>
         </Router>
       </MainPageContainer>
