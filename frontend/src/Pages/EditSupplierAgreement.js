@@ -61,13 +61,13 @@ export default function ApproveSupplier() {
                             <div style={{display:'flex', flexDirection:'row', flexWrap: 'wrap', padding: '15px',}}>
                             
                             <StyledButton style={{flex: 1}}
-                              onClick={() => navigate(`/newSuppliers`)}
+                              onClick={() => navigate(`/SuppliersList`)}
                             >
                                 Išsaugoti
                             </StyledButton>
                             
                             <StyledButton style={{flex: 1}}
-                              onClick={() => navigate(`/newSuppliers`)}
+                              onClick={() => navigate(`/SuppliersList`)}
                             >
                                 Atšaukti
                             </StyledButton>
