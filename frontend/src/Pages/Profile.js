@@ -106,6 +106,33 @@ export default function Profile () {
 
                     
                 }
+{
+                    userRole === ROLES.CLIENT && (
+                        <>
+                        
+                            <div>
+                                <b>Vartotojo vardas: </b>{userData.userName}
+                            </div>
+                            <div>
+                                <b><label for="address">Pristatymo adresas: </label></b>
+                                <input 
+                                type="text" 
+                                id="address" 
+                                name="adresas" 
+                                placeholder="Įveskite pristatymo adresą..">
+                                </input>
+                                <Button
+                                    type="submit"
+                                    size="small"
+                                    variant="contained"
+                                    sx={{ ml: 2}}
+                                    >
+                                    Išsaugoti
+                                </Button>
+                            </div>
+                        </>
+                    )
+                }
             </SimplePageContent>
         </div>
     );
