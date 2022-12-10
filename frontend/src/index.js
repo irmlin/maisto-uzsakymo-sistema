@@ -26,6 +26,7 @@ import Dishes from './Pages/Dishes';
 import Dish from './Pages/Dish';
 import DishEdit from './Pages/DishEdit';
 import ProtectedRoute from './Components/ProtectedRoute';
+import Logout from './Components/Logout';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -58,6 +59,7 @@ ReactDOM.render(
               <Route path="/SuppliersList" element={<SuppliersList/>}/>
               <Route path="/EditCourier/:courierId" element={<EditCourierAgreement/>}/>
               <Route path="/EditSupplier/:supplierId" element={<EditSupplierAgreement/>}/>
+              <Route path="/logout" element={<Logout/>}/>
             </Route>
 
             {/* For invalid paths, redirect to /login */}

@@ -21,7 +21,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [snackOpen, setSnackOpen] = useState(false);
   const [snackText, setSnackText] = useState("");
-  const [snackColor, setSnackColor] = useState("");
+  const [snackColor, setSnackColor] = useState("success");
 
   const { isAuthenticated, setIsAuthenticated, userData, setUserData } = useContext(UserContext);
 

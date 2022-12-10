@@ -19,7 +19,7 @@ http.createServer(app).listen(3001, () => {
     console.log("server is runing at port 3001");
 });
 
-app.post('/register-courier', express.json({type: '*/*'}), async (request, response) => {  
+app.post('/register/courier', express.json({type: '*/*'}), async (request, response) => {  
 	try{
 		let firstName = request.body.firstName;
 		let lastName = request.body.lastName;
@@ -43,7 +43,7 @@ app.post('/register-courier', express.json({type: '*/*'}), async (request, respo
 	}
 })
 
-app.post('/register-client', express.json({type: '*/*'}), async (request, response) => {  
+app.post('/register/client', express.json({type: '*/*'}), async (request, response) => {  
 	try{
 		let firstName = request.body.firstName;
 		let lastName = request.body.lastName;
@@ -65,7 +65,7 @@ app.post('/register-client', express.json({type: '*/*'}), async (request, respon
 	}
 })
 
-app.post('/register-restaurant', express.json({type: '*/*'}), async (request, response) => {  
+app.post('/register/restaurant', express.json({type: '*/*'}), async (request, response) => {  
 	try{
 		let email = request.body.email;
 		let username = request.body.username;
@@ -87,7 +87,7 @@ app.post('/register-restaurant', express.json({type: '*/*'}), async (request, re
 	}
 })
 
-app.post('/register-admin', express.json({type: '*/*'}), async (request, response) => {  
+app.post('/register/admin', express.json({type: '*/*'}), async (request, response) => {  
 	try{
 		let firstname = request.body.firstname;
 		let lastname = request.body.lastname;
@@ -125,7 +125,7 @@ app.post('/login', express.json({type: '*/*'}), async (request, response) => {
 			// if courier, change status to 'logged in'
 			if (role === ROLES.COURIER.ROLENAME) {
 				let sqlUpdateStatus = "UPDATE couriers SET status = ? WHERE id = ?";
-				let updateResult = await db.executeSqlQuery(sqlUpdateStatus, [COURIER_STATES.ONLINE, result[0].id]);
+				let updateResult = await db.executeSqlQuery(sqlUpdateStatus, [COURIER_STATES.WAITING_FOR_ORDER, result[0].id]);
 			}
 			response.status(200).send({success: true, email: email, role: role, username: result[0].username, id: result[0].id});			
 		}			
@@ -139,21 +139,7 @@ app.post('/login', express.json({type: '*/*'}), async (request, response) => {
 	}
 })
 
-app.get('/cities', async (request, response) => {
-	try{
-    let sql = 'SELECT * FROM cities';
-    let result = await db.executeSqlQuery(sql, []);
-    
-    response.status(200).send(JSON.stringify({result}));
-
-	}
-	catch (e) {
-		console.log(e);
-		response.status(500).send("Serverio klaida");
-	}
-})
-
-app.get('/courier-data/:id', async (request, response) => {
+app.get('/courier/:id/data', async (request, response) => {
 	try{
 		let id = request.params.id;
     let sql = 'SELECT * FROM couriers WHERE id = ?';
@@ -174,17 +160,29 @@ app.get('/courier-data/:id', async (request, response) => {
 	}
 })
 
-app.get('/cities', async (request, response) => {
+app.put('/courier/:id/transport', async (request, response) => {  
 	try{
-    let sql = 'SELECT * FROM cities';
-    let result = await db.executeSqlQuery(sql, []);
-    
-    response.status(200).send(JSON.stringify({result}));
-
+		let id = request.params.id;
+		let newTransport = request.body.transport;
+		let sql = 'UPDATE couriers SET transport = ? WHERE id = ?';
+		let result = await db.executeSqlQuery(sql, [newTransport, id]);
+    response.status(200).send({message: "Transportas išsaugotas sėkmingai!", success: true});	
+	}	
+	catch(e){
+		response.status(400).send({message: e.sqlMessage, success: false});
 	}
-	catch (e) {
-		console.log(e);
-		response.status(500).send("Serverio klaida");
+})
+
+app.put('/courier/:id/status', async (request, response) => {  
+	try{
+		let id = request.params.id;
+		let newStatus = request.body.status;
+		let sql = 'UPDATE couriers SET status = ? WHERE id = ?';
+		let result = await db.executeSqlQuery(sql, [newStatus, id]);
+    response.status(200).send({message: "Būsena išsaugota sėkmingai!", success: true});	
+	}	
+	catch(e){
+		response.status(400).send({message: e.sqlMessage, success: false});
 	}
 })
 

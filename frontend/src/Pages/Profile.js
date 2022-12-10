@@ -2,15 +2,17 @@ import Navbar from "../Components/Navbar";
 import SimplePageContent from "../Components/SimplePageContent";
 import { UserContext } from "../Contexts/UserContext";
 import { useContext, useEffect, useState } from "react";
-import {
+import { 
   COURIER_STATES_FOR_COURIER,
   ROLES,
   TRANSPORT_TYPES,
 } from "../Enums/Enums";
 import {
+  Alert,
   Button,
   MenuItem,
   Select,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
@@ -18,16 +20,22 @@ import {
   TableRow,
 } from "@mui/material";
 import { getUserData } from "../Services/UserService";
+import { IMMUTABLE_PROFILE_INFO_COURIER } from "../Enums/Enums";
+import { updateCourierTransport } from "../Services/UserService";
+import { updateCourierStatus } from "../Services/UserService";
 
 export default function Profile() {
   const { userData } = useContext(UserContext);
   const [profileData, setProfileData] = useState({});
+  const [snackOpen, setSnackOpen] = useState(false);
+  const [snackText, setSnackText] = useState("");
+  const [snackColor, setSnackColor] = useState("success");
 
   const fetchProfileData = async () => {
     const response = await getUserData(userData.role, userData.id);
     if (response) {
       if (response.data.success) {
-        setProfileData(response.data.profileData);
+        setProfileData({...response.data.profileData, birth_date: new Date(response.data.profileData.birth_date).toISOString().substring(0,10)});
       } else {
         console.log("Could not fetch profile information");
       }
@@ -36,9 +44,74 @@ export default function Profile() {
     }
   };
 
+  const handleSnackClose = () => {
+    setSnackOpen(false);
+  };
+
+  const courierDataToShow = !profileData
+    ? []
+    : [
+        profileData.firstname + ", " + profileData.lastname,
+        profileData.birth_date,
+        !profileData.employed_from ? "-" : profileData.employed_from,
+        profileData.phone_number,
+        profileData.approved === 0 ? "Ne" : "Taip",
+        profileData.city,
+      ];
+
+  const allowCourierEditStatus = !profileData
+    ? false
+    : Object.values(COURIER_STATES_FOR_COURIER)
+        .map((val) => val.value)
+        .includes(profileData.status)
+    ? true
+    : false;
+
   useEffect(() => {
     fetchProfileData();
   }, []);
+
+  const handleCourierTransportUpdate = async (event) => {
+    event.preventDefault();
+    const response = await updateCourierTransport(
+      userData.id,
+      profileData.transport
+    );
+    setSnackOpen(true);
+    if (response) {
+      if (response.data.success) {
+        setSnackText(response.data.message);
+        setSnackColor("success");
+      } else {
+        setSnackText(response.data.message);
+        setSnackColor("error");
+      }
+    } else {
+      setSnackText("Serverio klaida");
+      setSnackColor("error");
+    }
+  };
+
+  const handleCourierStatusUpdate = async (event) => {
+    event.preventDefault();
+    const response = await updateCourierStatus(
+      userData.id,
+      profileData.status
+    );
+    setSnackOpen(true);
+    if (response) {
+      if (response.data.success) {
+        setSnackText(response.data.message);
+        setSnackColor("success");
+      } else {
+        setSnackText(response.data.message);
+        setSnackColor("error");
+      }
+    } else {
+      setSnackText("Serverio klaida");
+      setSnackColor("error");
+    }
+  };
 
   return (
     <div>
@@ -48,20 +121,14 @@ export default function Profile() {
           <TableContainer>
             <Table>
               <TableBody>
-                <TableRow>
-                  <TableCell>
-                    <b>Vardas, Pavardė</b>
-                  </TableCell>
-                  <TableCell>
-                    {profileData.firstname} {profileData.lastname}
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <b>Gimimo data</b>
-                  </TableCell>
-                  <TableCell>{profileData.birth_date}</TableCell>
-                </TableRow>
+                {IMMUTABLE_PROFILE_INFO_COURIER.map((colName, i) => (
+                  <TableRow key={i}>
+                    <TableCell>
+                      <b>{colName}</b>
+                    </TableCell>
+                    <TableCell>{courierDataToShow[i]}</TableCell>
+                  </TableRow>
+                ))}
                 <TableRow>
                   <TableCell>
                     <b>Transporto priemonė: </b>
@@ -88,6 +155,7 @@ export default function Profile() {
                       type="submit"
                       size="small"
                       variant="contained"
+                      onClick={handleCourierTransportUpdate}
                       sx={{ ml: 2 }}
                     >
                       Išsaugoti
@@ -99,31 +167,40 @@ export default function Profile() {
                     <b>Mano būsena: </b>
                   </TableCell>
                   <TableCell>
-                    <Select
-                      size="small"
-                      id="courier-state-select"
-                      value={profileData.status ? profileData.status : ""}
-                      onChange={(event) =>
-                        setProfileData({
-                          ...profileData,
-                          status: event.target.value,
-                        })
-                      }
-                    >
-                      {Object.values(COURIER_STATES_FOR_COURIER).map((item) => (
-                        <MenuItem key={item.value} value={item.value}>
-                          {item.text}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    <Button
-                      type="submit"
-                      size="small"
-                      variant="contained"
-                      sx={{ ml: 2 }}
-                    >
-                      Išsaugoti
-                    </Button>
+                    {
+                      allowCourierEditStatus ? (
+                        <>
+                        <Select
+                          size="small"
+                          id="courier-state-select"
+                          value={profileData.status ? profileData.status : ""}
+                          onChange={(event) =>
+                            setProfileData({
+                              ...profileData,
+                              status: event.target.value,
+                            })
+                          }
+                        >
+                          {Object.values(COURIER_STATES_FOR_COURIER).map((item) => (
+                            <MenuItem key={item.value} value={item.value}>
+                              {item.text}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        <Button
+                          type="submit"
+                          size="small"
+                          variant="contained"
+                          sx={{ ml: 2 }}
+                          onClick={handleCourierStatusUpdate}
+                        >
+                          Išsaugoti
+                        </Button>
+                        </>
+                      ) : (
+                        <>{profileData.status}</>
+                      )
+                    }
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -187,6 +264,19 @@ export default function Profile() {
             </div>
           </>
         )}
+        <Snackbar
+          open={snackOpen}
+          autoHideDuration={4000}
+          onClose={handleSnackClose}
+        >
+          <Alert
+            severity={snackColor}
+            sx={{ horizontal: "center", width: "100%" }}
+            onClose={handleSnackClose}
+          >
+            {snackText}
+          </Alert>
+        </Snackbar>
       </SimplePageContent>
     </div>
   );

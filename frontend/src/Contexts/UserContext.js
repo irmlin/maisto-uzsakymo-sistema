@@ -13,13 +13,13 @@ export function UserContextProvider({ children }) {
     if (loggedIn) {
       const data = localStorage.getItem('userData');
       setUserData(JSON.parse(data));
-      setIsAuthenticated(loggedIn);
+      setIsAuthenticated(loggedIn === "true" ? true : false);
       setIsLoading(false)
     }
     else {
       setUserData({});
       setIsAuthenticated(false);
-      setIsLoading(true);
+      setIsLoading(false);
     }
   };
 

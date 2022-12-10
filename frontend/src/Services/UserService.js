@@ -5,11 +5,11 @@ export const registerNewUser = async (role, data) => {
     try {
         let endpoint = "";
         if (role === ROLES.COURIER)
-            endpoint = "/register-courier";
+            endpoint = "/register/courier";
         else if (role === ROLES.CLIENT)
-            endpoint = "/register-client";
+            endpoint = "/register/client";
         else if (role === ROLES.RESTAURANT)
-            endpoint = "/register-restaurant";
+            endpoint = "/register/restaurant";
 
         return await axiosInstance.post(endpoint, data);
     } catch (err) {
@@ -22,11 +22,11 @@ export const getUserData = async (role, id) => {
     try {
         let endpoint = "";
         if (role === ROLES.COURIER)
-            endpoint = `/courier-data/${id}`;
+            endpoint = `/courier/${id}/data`;
         else if (role === ROLES.CLIENT)
-            endpoint = `/client-data/${id}`;
+            endpoint = `/client/${id}/data`;
         else if (role === ROLES.RESTAURANT)
-            endpoint = `/restaurant-data/${id}`;
+            endpoint = `/restaurant/${id}/data`;
         return await axiosInstance.get(endpoint);
     } catch (err) {
         console.error("Could not fetch user data.", err.response);
@@ -42,3 +42,21 @@ export const login = async (details) => {
         return err.response;
     }
 };
+
+export const updateCourierTransport = async (id, transport) => {
+    try {
+        return await axiosInstance.put(`/courier/${id}/transport`, {transport});
+    } catch (err) {
+        console.error("Could not update courier transport", err.response);
+        return err.response;
+    }
+}
+
+export const updateCourierStatus = async (id, status) => {
+    try {
+        return await axiosInstance.put(`/courier/${id}/status`, {status});
+    } catch (err) {
+        console.error("Could not update courier status", err.response);
+        return err.response;
+    }
+}

@@ -5,31 +5,10 @@
 // If not: they are redirected to the login page.
 import { UserContext } from "../Contexts/UserContext";
 import { useContext } from "react";
-import { Redirect, Route, Navigate, Outlet } from 'react-router-dom'
-
-// const PrivateRoute = ({ component: Component, ...rest }) => {
-
-//   const { isAuthenticated} = useContext(UserContext);
-
-//   return (
-//     <Route
-//       {...rest}
-//       render={props =>
-//         return isAuthenticated ? (
-//           <Component {...props} />
-//         ) : (
-//           <Redirect to={{ pathname: '/login', state: { from: props.location } }} />
-//         )
-//       }
-//     />
-//   )
-// }
+import { Navigate, Outlet } from 'react-router-dom'
 
 const PrivateRoute = () => {
   const { isAuthenticated, isLoading } = useContext(UserContext);
-  // const isAuthenticated = localStorage.getItem('isAuthenticated');
-  // console.log(isAuthenticated)
-  // debugger
   return isAuthenticated ? <Outlet/> : (isLoading ? 'Loading...' : <Navigate to="/login" />);
 }
 

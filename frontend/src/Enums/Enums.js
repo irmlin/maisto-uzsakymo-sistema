@@ -76,3 +76,12 @@ export const ORDER_STATES_FOR_COURIER = Object.freeze({
   FOOD_TAKEN: "Maistas paimtas iš restorano",
   COMPLETED: "Pristatytas"
 });
+
+export const IMMUTABLE_PROFILE_INFO_COURIER = [
+  "Vardas, Pavardė",
+  "Gimimo Data",
+  "Įdarbintas/a nuo",
+  "Telefono Nr.",
+  "Patvirtintas Administratoriaus",
+  "Miestas"
+];
