@@ -73,11 +73,11 @@ const Navbar = () => {
           value={userRole}
           label="Peržiūrėti kaip"
           onChange={onUserRoleChange}
-      >
+        >
           {
-              Object.values(ROLES).map(item => (
-                  <MenuItem key={item} value={item}>{item}</MenuItem>
-              ))
+            Object.values(ROLES).map(item => (
+                <MenuItem key={item} value={item}>{item}</MenuItem>
+            ))
           }
         </Select>
       </div>

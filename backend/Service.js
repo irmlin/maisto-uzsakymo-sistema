@@ -3,6 +3,7 @@ import http from 'http';
 import * as db from './db.js'
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import { COURIER_STATES, ROLES } from './Enums/Enums.js';
 
 const app = express();
 
@@ -14,8 +15,8 @@ app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
 
 app.use(express.json({type: '*/*'}));
 
-http.createServer(app).listen(3000, () => {
-    console.log("server is runing at port 3000");
+http.createServer(app).listen(3001, () => {
+    console.log("server is runing at port 3001");
 });
 
 app.post('/register-courier', express.json({type: '*/*'}), async (request, response) => {  
@@ -103,6 +104,87 @@ app.post('/register-admin', express.json({type: '*/*'}), async (request, respons
 	}	
 	catch(e){
 		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.post('/login', express.json({type: '*/*'}), async (request, response) => {
+	try {
+		let email = request.body.email;
+		let password = request.body.password;
+		let role = request.body.selectedRole;
+		let tableName = Object.values(ROLES).find(item => (
+			item.ROLENAME === role
+		)).TABLENAME;
+
+		let sql = "SELECT COUNT(id) AS found, id, username FROM " + tableName + " WHERE email = ? AND password = ?";
+		let data = [email, password];
+		let result = await db.executeSqlQuery(sql, data);
+
+		if(result[0].found == 1)
+		{
+			// if courier, change status to 'logged in'
+			if (role === ROLES.COURIER.ROLENAME) {
+				let sqlUpdateStatus = "UPDATE couriers SET status = ? WHERE id = ?";
+				let updateResult = await db.executeSqlQuery(sqlUpdateStatus, [COURIER_STATES.ONLINE, result[0].id]);
+			}
+			response.status(200).send({success: true, email: email, role: role, username: result[0].username, id: result[0].id});			
+		}			
+		else {
+			response.status(401).send({success: false, message: "Vartotojas nerastas"});
+		}
+	}	
+	catch(e){
+		console.log(e);
+		response.status(500).send({message: "Serverio klaida"});
+	}
+})
+
+app.get('/cities', async (request, response) => {
+	try{
+    let sql = 'SELECT * FROM cities';
+    let result = await db.executeSqlQuery(sql, []);
+    
+    response.status(200).send(JSON.stringify({result}));
+
+	}
+	catch (e) {
+		console.log(e);
+		response.status(500).send("Serverio klaida");
+	}
+})
+
+app.get('/courier-data/:id', async (request, response) => {
+	try{
+		let id = request.params.id;
+    let sql = 'SELECT * FROM couriers WHERE id = ?';
+    let result = await db.executeSqlQuery(sql, [id]);
+		
+		let sqlCity = 'SELECT * FROM cities WHERE id = ?';
+		let resultCity = await db.executeSqlQuery(sqlCity, [result[0].fk_city_id]);
+    
+		let profileData = (({ firstname, lastname, email, birth_date, employed_from, phone_number, transport, approved, status }) =>
+		 ({ firstname, lastname, email, birth_date, employed_from, phone_number, transport, approved, status }))(result[0]);
+		profileData["city"] = resultCity[0]["name"];
+		profileData["county"] = resultCity[0]["county"];
+    response.status(200).send(JSON.stringify({profileData: profileData, success: true}));
+	}
+	catch (e) {
+		console.log(e);
+		response.status(500).send("Serverio klaida");
+	}
+})
+
+app.get('/cities', async (request, response) => {
+	try{
+    let sql = 'SELECT * FROM cities';
+    let result = await db.executeSqlQuery(sql, []);
+    
+    response.status(200).send(JSON.stringify({result}));
+
+	}
+	catch (e) {
+		console.log(e);
+		response.status(500).send("Serverio klaida");
 	}
 })
 

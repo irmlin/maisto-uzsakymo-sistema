@@ -25,6 +25,7 @@ import EditSupplierAgreement from './Pages/EditSupplierAgreement';
 import Dishes from './Pages/Dishes';
 import Dish from './Pages/Dish';
 import DishEdit from './Pages/DishEdit';
+import ProtectedRoute from './Components/ProtectedRoute';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -32,26 +33,35 @@ ReactDOM.render(
       <MainPageContainer>
         <Router>
           <Routes>
-            <Route exact path="/profile" element={<Profile/>} />
-            <Route path="/" element={<App/>} />
-            <Route path="/menu/:restaurantId" element={<Menu/>} />
-            <Route path="/login" element={<Login/>} />
-            <Route path="/register" element={<Register/>} />
-            <Route path="/order_history" element={<OrderHistory/>} />
-            <Route path="/dishes" element={<Dishes/>} />
-            <Route path="/dish" element={<Dish/>} />
-            <Route path="/dishedit" element={<DishEdit/>} />
-            <Route path="/newCouriers" element={<NewCourierData/>} />
-            <Route path="/newSuppliers" element={<NewSupplierData/>} />
-            <Route path="/ApproveCourier/:courierId" element={<ApproveCourier/>} />
-            <Route path="/ApproveSupplier/:supplierId" element={<ApproveSupplier/>} />
-            <Route path="/ClientsReports" element={<ClientsReport/>} />
-            <Route path="/CouriersReports" element={<CouriersReport/>} />
-            <Route path="/SuppliersReports" element={<SuppliersReport/>} />
-            <Route path="/CouriersList" element={<CouriersList/>} />
-            <Route path="/SuppliersList" element={<SuppliersList/>} />
-            <Route path="/EditCourier/:courierId" element={<EditCourierAgreement/>} />
-            <Route path="/EditSupplier/:supplierId" element={<EditSupplierAgreement/>} />
+
+            {/* These paths are accessible to anyone */}
+            <Route path="/login" element={<Login/>}/>
+            <Route path="/register" element={<Register/>}/>
+
+            {/* These are all the protected routes. A user that is not logged in will be redirected to /login when trying to access them. */}
+            <Route element={<ProtectedRoute/>}>
+              <Route path="/" element={<App/>}></Route>
+              <Route path="/profile" element={<Profile/>}/>
+              <Route path="/menu/:restaurantId" element={<Menu/>}/>
+              <Route path="/order_history" element={<OrderHistory/>} />
+              <Route path="/dishes" element={<Dishes/>}/>
+              <Route path="/dish" element={<Dish/>}/>
+              <Route path="/dishedit" element={<DishEdit/>}/>
+              <Route path="/newCouriers" element={<NewCourierData/>}/>
+              <Route path="/newSuppliers" element={<NewSupplierData/>}/>
+              <Route path="/ApproveCourier/:courierId" element={<ApproveCourier/>}/>
+              <Route path="/ApproveSupplier/:supplierId" element={<ApproveSupplier/>}/>
+              <Route path="/ClientsReports" element={<ClientsReport/>}/>
+              <Route path="/CouriersReports" element={<CouriersReport/>}/>
+              <Route path="/SuppliersReports" element={<SuppliersReport/>}/>
+              <Route path="/CouriersList" element={<CouriersList/>}/>
+              <Route path="/SuppliersList" element={<SuppliersList/>}/>
+              <Route path="/EditCourier/:courierId" element={<EditCourierAgreement/>}/>
+              <Route path="/EditSupplier/:supplierId" element={<EditSupplierAgreement/>}/>
+            </Route>
+
+            {/* For invalid paths, redirect to /login */}
+            <Route path="/*" element={<Login/>} />
             
           </Routes>
         </Router>
@@ -101,3 +111,22 @@ ReactDOM.render(
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
+
+
+{/* <Route path="/profile" element={<ProtectedRoute><Profile/></ProtectedRoute>}/>
+<Route path="/menu/:restaurantId" element={<ProtectedRoute><Menu/></ProtectedRoute>} />
+<Route path="/order_history" element={<ProtectedRoute><OrderHistory/></ProtectedRoute>} />
+<Route path="/dishes" element={<ProtectedRoute><Dishes/></ProtectedRoute>} />
+<Route path="/dish" element={<ProtectedRoute><Dish/></ProtectedRoute>} />
+<Route path="/dishedit" element={<ProtectedRoute><DishEdit/></ProtectedRoute>} />
+<Route path="/newCouriers" element={<ProtectedRoute><NewCourierData/></ProtectedRoute>} />
+<Route path="/newSuppliers" element={<ProtectedRoute><NewSupplierData/></ProtectedRoute>} />
+<Route path="/ApproveCourier/:courierId" element={<ProtectedRoute><ApproveCourier/></ProtectedRoute>} />
+<Route path="/ApproveSupplier/:supplierId" element={<ProtectedRoute><ApproveSupplier/></ProtectedRoute>} />
+<Route path="/ClientsReports" element={<ProtectedRoute><ClientsReport/></ProtectedRoute>} />
+<Route path="/CouriersReports" element={<ProtectedRoute><CouriersReport/></ProtectedRoute>} />
+<Route path="/SuppliersReports" element={<ProtectedRoute><SuppliersReport/></ProtectedRoute>} />
+<Route path="/CouriersList" element={<ProtectedRoute><CouriersList/></ProtectedRoute>} />
+<Route path="/SuppliersList" element={<ProtectedRoute><SuppliersList/></ProtectedRoute>} />
+<Route path="/EditCourier/:courierId" element={<ProtectedRoute><EditCourierAgreement/></ProtectedRoute>} />
+<Route path="/EditSupplier/:supplierId" element={<ProtectedRoute><EditSupplierAgreement/></ProtectedRoute>} /> */}
