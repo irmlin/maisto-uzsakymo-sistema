@@ -60,3 +60,12 @@ export const updateCourierStatus = async (id, status) => {
         return err.response;
     }
 }
+
+export const updateRestaurant = async (id, updatedRestaurantData) => {
+    try {
+        return await axiosInstance.put(`/restaurant/${id}/data`, updatedRestaurantData);
+    } catch (err) {
+        console.error("Could not update restaurant data", err.response);
+        return err.response;
+    }
+}

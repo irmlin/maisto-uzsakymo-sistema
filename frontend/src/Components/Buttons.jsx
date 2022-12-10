@@ -84,8 +84,6 @@ const Buttons = () => {
       </StyledButton>
       }
 
-      
-
     </div>
   );
 };

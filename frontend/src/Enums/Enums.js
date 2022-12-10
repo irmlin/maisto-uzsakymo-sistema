@@ -78,10 +78,10 @@ export const ORDER_STATES_FOR_COURIER = Object.freeze({
 });
 
 export const IMMUTABLE_PROFILE_INFO_COURIER = [
-  "Vardas, Pavardė",
-  "Gimimo Data",
+  "Vardas, pavardė",
+  "Gimimo data",
   "Įdarbintas/a nuo",
-  "Telefono Nr.",
-  "Patvirtintas Administratoriaus",
+  "Telefono dr.",
+  "Patvirtintas administratoriaus",
   "Miestas"
 ];

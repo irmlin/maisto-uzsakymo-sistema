@@ -57,14 +57,14 @@ const GridPageContent = ({children}) => {
             border-bottom: none;
           }
 
-          &:nth-child(odd) {
+          &:nth-of-type(odd) {
             border-left: none;
             ${mq[2]} {
               border-right: none;
             }
           }
 
-          &:nth-child(even) {
+          &:nth-of-type(even) {
             border-right: none;
             ${mq[2]} {
               border-left: none;

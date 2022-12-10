@@ -2,7 +2,7 @@ import Navbar from "../Components/Navbar";
 import SimplePageContent from "../Components/SimplePageContent";
 import { UserContext } from "../Contexts/UserContext";
 import { useContext, useEffect, useState } from "react";
-import { 
+import {
   COURIER_STATES_FOR_COURIER,
   ROLES,
   TRANSPORT_TYPES,
@@ -18,11 +18,15 @@ import {
   TableCell,
   TableContainer,
   TableRow,
+  TextField,
 } from "@mui/material";
 import { getUserData } from "../Services/UserService";
 import { IMMUTABLE_PROFILE_INFO_COURIER } from "../Enums/Enums";
-import { updateCourierTransport } from "../Services/UserService";
-import { updateCourierStatus } from "../Services/UserService";
+import {
+  updateCourierTransport,
+  updateCourierStatus,
+  updateRestaurant,
+} from "../Services/UserService";
 
 export default function Profile() {
   const { userData } = useContext(UserContext);
@@ -35,12 +39,25 @@ export default function Profile() {
     const response = await getUserData(userData.role, userData.id);
     if (response) {
       if (response.data.success) {
-        setProfileData({...response.data.profileData, birth_date: new Date(response.data.profileData.birth_date).toISOString().substring(0,10)});
+        if (userData.role === ROLES.COURIER) {
+          setProfileData({
+            ...response.data.profileData,
+            birth_date: new Date(response.data.profileData.birth_date)
+              .toISOString()
+              .substring(0, 10),
+          });
+        } else {
+          setProfileData(response.data.profileData);
+        }
       } else {
-        console.log("Could not fetch profile information");
+        setSnackColor("error");
+        setSnackOpen(true);
+        setSnackText(response.data.message);
       }
     } else {
-      console.log("Server error");
+      setSnackColor("error");
+      setSnackOpen(true);
+      setSnackText("Server error");
     }
   };
 
@@ -94,10 +111,32 @@ export default function Profile() {
 
   const handleCourierStatusUpdate = async (event) => {
     event.preventDefault();
-    const response = await updateCourierStatus(
-      userData.id,
-      profileData.status
-    );
+    const response = await updateCourierStatus(userData.id, profileData.status);
+    setSnackOpen(true);
+    if (response) {
+      if (response.data.success) {
+        setSnackText(response.data.message);
+        setSnackColor("success");
+      } else {
+        setSnackText(response.data.message);
+        setSnackColor("error");
+      }
+    } else {
+      setSnackText("Serverio klaida");
+      setSnackColor("error");
+    }
+  };
+
+  const handleRestaurantUpdate = async (event) => {
+    event.preventDefault();
+    const updatedRestaurantData = {
+      name: profileData.name,
+      address: profileData.address,
+      opening_time: profileData.opening_time,
+      closing_time: profileData.closing_time,
+    };
+
+    const response = await updateRestaurant(userData.id, updatedRestaurantData);
     setSnackOpen(true);
     if (response) {
       if (response.data.success) {
@@ -167,9 +206,8 @@ export default function Profile() {
                     <b>Mano būsena: </b>
                   </TableCell>
                   <TableCell>
-                    {
-                      allowCourierEditStatus ? (
-                        <>
+                    {allowCourierEditStatus ? (
+                      <>
                         <Select
                           size="small"
                           id="courier-state-select"
@@ -181,11 +219,13 @@ export default function Profile() {
                             })
                           }
                         >
-                          {Object.values(COURIER_STATES_FOR_COURIER).map((item) => (
-                            <MenuItem key={item.value} value={item.value}>
-                              {item.text}
-                            </MenuItem>
-                          ))}
+                          {Object.values(COURIER_STATES_FOR_COURIER).map(
+                            (item) => (
+                              <MenuItem key={item.value} value={item.value}>
+                                {item.text}
+                              </MenuItem>
+                            )
+                          )}
                         </Select>
                         <Button
                           type="submit"
@@ -196,11 +236,10 @@ export default function Profile() {
                         >
                           Išsaugoti
                         </Button>
-                        </>
-                      ) : (
-                        <>{profileData.status}</>
-                      )
-                    }
+                      </>
+                    ) : (
+                      <>{profileData.status}</>
+                    )}
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -208,61 +247,136 @@ export default function Profile() {
           </TableContainer>
         )}
         {userData.role === ROLES.RESTAURANT && (
-          <>
-            <div>
-              <b>Pavadinimas: </b>
-              <input type="text" value={userData.name} />
-            </div>
-            <div>
-              <b>Adresas: </b>
-              <input type="text" value={userData.address} />
-            </div>
-            <div>
-              <b>Atidarymo laikas: </b>
-              <input type="text" value={userData.o_time} />
-            </div>
-            <div>
-              <b>Uždarymo laikas: </b>
-              <input type="text" value={userData.c_time} />
-            </div>
-            <div>
-              <Button
-                type="submit"
-                size="small"
-                variant="contained"
-                sx={{ ml: 2 }}
-              >
-                Išsaugoti
-              </Button>
-            </div>
-          </>
+          <TableContainer>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell>
+                    <b>Pavadinimas</b>
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      size="small"
+                      autoComplete="off"
+                      value={profileData.name ? profileData.name : ""}
+                      onChange={(event) =>
+                        setProfileData({
+                          ...profileData,
+                          name: event.target.value,
+                        })
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <b>Adresas</b>
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      size="small"
+                      autoComplete="off"
+                      value={profileData.address ? profileData.address : ""}
+                      onChange={(event) =>
+                        setProfileData({
+                          ...profileData,
+                          address: event.target.value,
+                        })
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <b>Atidarymo laikas</b>
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      size="small"
+                      autoComplete="off"
+                      type="time"
+                      value={
+                        profileData.opening_time ? profileData.opening_time : ""
+                      }
+                      onChange={(event) =>
+                        setProfileData({
+                          ...profileData,
+                          opening_time: event.target.value,
+                        })
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <b>Uždarymo laikas</b>
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      size="small"
+                      autoComplete="off"
+                      type="time"
+                      value={
+                        profileData.closing_time ? profileData.closing_time : ""
+                      }
+                      onChange={(event) =>
+                        setProfileData({
+                          ...profileData,
+                          closing_time: event.target.value,
+                        })
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      onClick={handleRestaurantUpdate}
+                    >
+                      Išsaugoti
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
         )}
         {userData.role === ROLES.CLIENT && (
-          <>
-            <div>
-              <b>Vartotojo vardas: </b>
-              {userData.userName}
-            </div>
-            <div>
-              <b>
-                <label for="address">Pristatymo adresas: </label>
-              </b>
-              <input
-                type="text"
-                id="address"
-                name="adresas"
-                placeholder="Įveskite pristatymo adresą.."
-              ></input>
-              <Button
-                type="submit"
-                size="small"
-                variant="contained"
-                sx={{ ml: 2 }}
-              >
-                Išsaugoti
-              </Button>
-            </div>
-          </>
+          <TableContainer>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell>
+                    <b>Vartotojo vardas</b>
+                  </TableCell>
+                  <TableCell>{profileData.username}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <b>Pristatymo adresas</b>
+                  </TableCell>
+                  <TableCell>
+                    <input
+                      type="text"
+                      id="address"
+                      name="adresas"
+                      placeholder="Įveskite pristatymo adresą.."
+                    ></input>
+                    <Button
+                      type="submit"
+                      size="small"
+                      variant="contained"
+                      sx={{ ml: 2 }}
+                    >
+                      Išsaugoti
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
         )}
         <Snackbar
           open={snackOpen}

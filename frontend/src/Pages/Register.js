@@ -29,8 +29,8 @@ export default function Register() {
   const [cityId, setCityId] = useState();
   const [county, setCounty] = useState();
   const [address, setAddress] = useState("");
-  const [openingTime, setopeningTime] = useState("08:00");
-  const [closingTime, setclosingTime] = useState("17:00");
+  const [openingTime, setOpeningTime] = useState("08:00");
+  const [closingTime, setClosingTime] = useState("17:00");
 
   const [citiesCounties, setCitiesCounties] = useState([]);
 
@@ -54,7 +54,7 @@ export default function Register() {
   
   const [snackOpen, setSnackOpen] = useState(false);
   const [snackText, setSnackText] = useState("");
-  const [snackColor, setSnackColor] = useState("");
+  const [snackColor, setSnackColor] = useState("success");
 
   const fetchCities = async () => {
     const response = await getCitiesCounties();
@@ -66,8 +66,8 @@ export default function Register() {
   }
 
   useEffect(() => {
-      fetchCities();
-  }, [])
+    selectedRole !== ROLES.CLIENT && fetchCities();
+  }, [selectedRole])
 
   const navigate = useNavigate();
   const rolesWithoutAdmin = (({ CLIENT, COURIER, RESTAURANT }) => ({ CLIENT, COURIER, RESTAURANT }))(ROLES)
@@ -240,7 +240,7 @@ export default function Register() {
       if (response.data.success) {
         setSnackColor("success");
         setSnackText("Registracija sėkminga, nukreipiame į prisijungimo puslapį...");
-        setTimeout(() => navigate('/login'), 3000);
+        setTimeout(() => navigate('/login'), 2000);
       } else {
         setSnackColor("error");
         setSnackText(response.data.message);
@@ -392,54 +392,42 @@ export default function Register() {
               onChange={event => setRestaurantName(event.target.value)}
               value={restaurantName}
             />
-            {
-              county && (
-                <>
-                  <InputLabel sx={{display: visibleFields.county ? "block" : "none"}} id="county-select-label">Apskritis</InputLabel>
-                  <Select
-                    labelId="county-select-label"
-                    sx={{display: visibleFields.county ? "block" : "none"}}
-                    fullWidth
-                    id="county-select"
-                    value={county}
-                    label="Pasirinkite Apskritį"
-                    onChange={event => 
-                      {
-                        setCounty(event.target.value);
-                        setCityId(citiesCounties.find(item => item.county === event.target.value).id);
-                    }}
-                  >
-                    {
-                        counties.map(item => (
-                            <MenuItem key={item} value={item}>{item}</MenuItem>
-                        ))
-                    }
-                  </Select>
-                </>
-              )
-            }
-            {
-              cityId && (
-                <>
-                  <InputLabel sx={{display: visibleFields.cityId ? "block" : "none"}} id="cityId-select-label">Miestas</InputLabel>
-                  <Select
-                      labelId="cityId-select-label"
-                      sx={{display: visibleFields.cityId ? "block" : "none"}}
-                      fullWidth
-                      id="cityId-select"
-                      value={cityId}
-                      label="Pasirinkite Miestą"
-                      onChange={event => setCityId(event.target.value)}
-                  >
-                      {
-                          citiesCounties.filter(item => item.county === county).map(item => (
-                              <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>
-                          ))
-                      }
-                  </Select>
-                </>
-              )
-            }
+            <InputLabel sx={{display: visibleFields.county ? "block" : "none"}} id="county-select-label">Apskritis</InputLabel>
+            <Select
+              labelId="county-select-label"
+              sx={{display: visibleFields.county ? "block" : "none"}}
+              fullWidth
+              id="county-select"
+              value={county ? county : ""}
+              label="Pasirinkite Apskritį"
+              onChange={event => 
+                {
+                  setCounty(event.target.value);
+                  setCityId(citiesCounties.find(item => item.county === event.target.value).id);
+              }}
+            >
+              {
+                  counties.map(item => (
+                      <MenuItem key={item} value={item}>{item}</MenuItem>
+                  ))
+              }
+            </Select>
+            <InputLabel sx={{display: visibleFields.cityId ? "block" : "none"}} id="cityId-select-label">Miestas</InputLabel>
+            <Select
+                labelId="cityId-select-label"
+                sx={{display: visibleFields.cityId ? "block" : "none"}}
+                fullWidth
+                id="cityId-select"
+                value={cityId ? cityId : ""}
+                label="Pasirinkite Miestą"
+                onChange={event => setCityId(event.target.value)}
+            >
+                {
+                    citiesCounties.filter(item => item.county === county).map(item => (
+                        <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>
+                    ))
+                }
+            </Select>
             <InputLabel sx={{display: visibleFields.transport ? "block" : "none"}} id="transport-select-label">Transporto priemonė</InputLabel>
             <Select
                 labelId="transport-select-label"
@@ -478,7 +466,7 @@ export default function Register() {
               label="Dirbama nuo"
               id="openingTime"
               autoComplete="off"
-              onChange={event => setopeningTime(event.target.value)}
+              onChange={event => setOpeningTime(event.target.value)}
               value={openingTime}
             />
             <TextField
@@ -491,7 +479,7 @@ export default function Register() {
               label="Dirbama iki"
               id="closingTime"
               autoComplete="off"
-              onChange={event => setclosingTime(event.target.value)}
+              onChange={event => setClosingTime(event.target.value)}
               value={closingTime}
             />
             <TextField

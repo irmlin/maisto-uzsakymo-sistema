@@ -18,17 +18,17 @@ export default function Login() {
 
   const [selectedRole, setSelectedRole] = useState(ROLES.CLIENT);
   const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
+  const [emailOrUsername, setEmailOrUsername] = useState("");
   const [snackOpen, setSnackOpen] = useState(false);
   const [snackText, setSnackText] = useState("");
   const [snackColor, setSnackColor] = useState("success");
 
-  const { isAuthenticated, setIsAuthenticated, userData, setUserData } = useContext(UserContext);
+  const { setIsAuthenticated, setUserData } = useContext(UserContext);
 
   const navigate = useNavigate();
 
   function emptyFields() {
-    return !password || !email;
+    return !password || !emailOrUsername;
   }
 
   const handleSubmit = async (event) => {
@@ -41,7 +41,7 @@ export default function Login() {
     setSnackOpen(false);
     setSnackText("");
 
-    const response = await login({selectedRole, email, password});
+    const response = await login({selectedRole, emailOrUsername, password});
     if (response) {
       if (response.data.success) {
         const newUserData = {
@@ -112,13 +112,13 @@ export default function Login() {
               margin="normal"
               required
               fullWidth
-              id="email"
-              label="E-pašto adresas"
-              name="email"
+              id="emailOrUsername"
+              label="E-pašto adresas arba vartotojo vardas"
+              name="emailOrUsername"
               autoComplete="off"
               autoFocus
-              onChange={event => setEmail(event.target.value)}
-              value={email}
+              onChange={event => setEmailOrUsername(event.target.value)}
+              value={emailOrUsername}
             />
             <TextField
               margin="normal"

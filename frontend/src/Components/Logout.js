@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { Navigate } from 'react-router-dom'
 import { UserContext } from '../Contexts/UserContext';
 
@@ -8,7 +8,11 @@ export default function Logout() {
 
   localStorage.setItem('userData', JSON.stringify({}));
   localStorage.setItem('isAuthenticated', false);
-  setIsAuthenticated(false);
-  setUserData({});
+  
+  useEffect(() => {
+    setIsAuthenticated(false);
+    setUserData({});
+  })
+  
   return <Navigate to="/login"/>;
 }

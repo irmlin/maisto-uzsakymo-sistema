@@ -3,7 +3,7 @@ import * as db from "../db.js";
 const query = 
 `
 INSERT INTO CITIES (name, county) VALUES 
-("Alytus", "Alytaus"), ("Druskininkai", "Alytaus"), ("Kėdainiai", "Kauno"), ("Raseiniai", "Kauno"), ("Klaipėda", "Klaipėdos"),
+("Alytus", "Alytaus"), ("Druskininkai", "Alytaus"), ("Kėdainiai", "Kauno"), ("Raseiniai", "Kauno"), ("Kaunas", "Kauno"), ("Klaipėda", "Klaipėdos"),
 ("Palanga", "Klaipėdos"), ("Kretinga", "Klaipėdos"), ("Šilutė", "Klaipėdos"), ("Marijampolė", "Marijampolės"), ("Šakiai", "Marijampolės"),
 ("Panevėžys", "Panevėžio"), ("Biržai", "Panevėžio"), ("Rokiškis", "Panevėžio"), ("Šiauliai", "Šiaulių"), ("Kelmė", "Šiaulių"),
 ("Radviliškis", "Šiaulių"), ("Tauragė", "Tauragės"), ("Jurbarkas", "Tauragės"), ("Šilalė", "Tauragės"), ("Telšiai", "Telšių"),
