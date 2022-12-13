@@ -45,8 +45,8 @@ export default function Register() {
     phoneNumber: true,
     restaurantName: false,
     transport: false,
-    cityId: false,
-    county: false,
+    cityId: true,
+    county: true,
     address: false,
     openingTime: false,
     closingTime: false
@@ -66,8 +66,8 @@ export default function Register() {
   }
 
   useEffect(() => {
-    selectedRole !== ROLES.CLIENT && fetchCities();
-  }, [selectedRole])
+    fetchCities();
+  }, [])
 
   const navigate = useNavigate();
   const rolesWithoutAdmin = (({ CLIENT, COURIER, RESTAURANT }) => ({ CLIENT, COURIER, RESTAURANT }))(ROLES)
@@ -106,7 +106,7 @@ export default function Register() {
       return {valid: !empty, message: empty ? emptyMsg : ""};
     }
     else if (selectedRole === ROLES.CLIENT) {
-      empty = !firstName || !lastName || !email || !username || !password || !personalCode || !birthDate || !phoneNumber;
+      empty = !firstName || !lastName || !email || !username || !password || !personalCode || !birthDate || !phoneNumber || !cityId;
     
     } else {
       empty = !firstName || !lastName || !email || !username || !password || !personalCode || !birthDate || !phoneNumber || !transport || !cityId;
@@ -138,8 +138,8 @@ export default function Register() {
             phoneNumber: true,
             restaurantName: false,
             transport: false,
-            cityId: false,
-            county: false,
+            cityId: true,
+            county: true,
             address: false,
             openingTime: false,
             closingTime: false});
@@ -206,6 +206,7 @@ export default function Register() {
         "personalCode": personalCode,
         "birthDate": birthDate,
         "phoneNumber": phoneNumber,
+        "cityId": cityId
       }
     }
     if (selectedRole === ROLES.RESTAURANT) {

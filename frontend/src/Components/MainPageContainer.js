@@ -8,7 +8,7 @@ import OrderOfferDialog from "./OrderOfferDialog";
 
 export default function MainPageContainer({children}) {
 
-  const { userRole } = useContext(UserContext);
+  const { userData } = useContext(UserContext);
   const [offerOpen, setOfferOpen] = useState(false);
   const [orderOpen, setOrderOpen] = useState(false);
 
@@ -16,7 +16,7 @@ export default function MainPageContainer({children}) {
     <div>
       {children}
       {
-        userRole === ROLES.COURIER && (
+        userData.role === ROLES.COURIER && (
           <>
           <div style={{position: "fixed", bottom: 0, right: 0}}>
             <Button

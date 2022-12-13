@@ -1,5 +1,6 @@
 import * as db from "../db.js";
 
+
 const query = 
 `
 DROP TABLE IF EXISTS cart_meals;
@@ -32,6 +33,8 @@ CREATE TABLE clients
 	email varchar (50),
 	username varchar (50),
 	password varchar (255),
+	fk_city_id int,
+  FOREIGN KEY (fk_city_id) REFERENCES cities(id),
 	PRIMARY KEY(id)
 );
 

@@ -59,14 +59,15 @@ app.post('/register/client', express.json({type: '*/*'}), async (request, respon
     let personalCode = request.body.personalCode;
     let birthDate = request.body.birthDate;
     let phoneNumber = request.body.phoneNumber;
+		let cityId = request.body.cityId;
 	
 		const validationResult = await ExistEmailOrUsernameDuplicates('clients', email, username);
 		if (validationResult.existDuplicates) {
 			response.status(400).send({message: validationResult.message, success: false});
 		} else {
 			let sql = `INSERT INTO clients (personal_code, firstname, lastname, birth_date,
-				phone_number, email, username, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-			let data = [personalCode, firstName, lastName, birthDate, phoneNumber, email, username, password];
+				phone_number, email, username, password, fk_city_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+			let data = [personalCode, firstName, lastName, birthDate, phoneNumber, email, username, password, cityId];
 			await db.executeSqlQuery(sql, data);
 			response.status(201).send({message: "Klientas sėkmingai sukurtas", success: true});	
 		}
@@ -132,7 +133,7 @@ app.post('/login', express.json({type: '*/*'}), async (request, response) => {
 			item.ROLENAME === role
 		)).TABLENAME;
 
-		let sql = `SELECT COUNT(id) AS found, id, username, email, password FROM ${tableName} WHERE email = ? OR username = ?`;
+		let sql = `SELECT COUNT(id) AS found, id, fk_city_id, username, email, password FROM ${tableName} WHERE email = ? OR username = ?`;
 		let result = await db.executeSqlQuery(sql, [emailOrUsername, emailOrUsername]);
 
 		// check if user exists
@@ -146,7 +147,8 @@ app.post('/login', express.json({type: '*/*'}), async (request, response) => {
 					let sqlUpdateStatus = "UPDATE couriers SET status = ? WHERE id = ?";
 					let updateResult = await db.executeSqlQuery(sqlUpdateStatus, [COURIER_STATES.WAITING_FOR_ORDER, result[0].id]);
 				}
-				response.status(200).send({success: true, email: result[0].email, role: role, username: result[0].username, id: result[0].id});	
+				response.status(200).send({success: true, email: result[0].email, role: role,
+					username: result[0].username, id: result[0].id, cityId: result[0].fk_city_id});	
 			} else {
 				response.status(401).send({success: false, message: "Neteisingas slaptažodis"});
 			}		
@@ -264,5 +266,40 @@ app.get('/cities', async (request, response) => {
 	catch (e) {
 		console.log(e);
 		response.status(500).send("Serverio klaida");
+	}
+})
+
+app.get('/restaurants/:cityId', async (request, response) => {
+	try{
+		let id = request.params.cityId;
+    let sql = `SELECT id, name, address, opening_time, closing_time FROM restaurants WHERE approved = 1 AND fk_city_id=${id}`;
+    let result = await db.executeSqlQuery(sql, []);
+    
+    response.status(200).send({success: true, restaurants: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.get('/meals/:restaurantId', async (request, response) => {
+	try{
+		let id = request.params.restaurantId;
+    let sql = 
+		`
+		SELECT m.id, m.name, m.description, m.price, m.vegetarian, r.name as restaurantName
+		FROM meals AS m
+		RIGHT JOIN restaurants AS r
+		ON r.id = m.fk_restaurant_id
+		WHERE r.id = ${id} 
+		`;
+    let result = await db.executeSqlQuery(sql, []);
+    
+    response.status(200).send({success: true, meals: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
 	}
 })
