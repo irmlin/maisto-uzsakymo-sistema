@@ -62,7 +62,7 @@ export default function MenuAll() {
               variants={itemContainer}
               transition={{ delay: i * 0.2 }}
             >
-              <img src={imgAllMenu} alt="food burger" />
+              <img src={imgAllMenu} alt="food burger"/>
               <motion.div className="item-content">
                 <motion.div className="item-title-box">
                   <motion.h5 className="item-title">{item.name}</motion.h5>

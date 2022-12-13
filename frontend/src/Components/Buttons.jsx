@@ -17,11 +17,13 @@ const Buttons = () => {
         display: flex;
       `}
     >
-      <StyledButton
-        onClick={() => navigate("/")}
-      >
-        Restoranai
-      </StyledButton>
+      { userData.role === ROLES.CLIENT &&
+        <StyledButton
+          onClick={() => navigate("/")}
+        >
+          Restoranai
+        </StyledButton>
+      }
       
       { userData.role !== ROLES.ADMINISTRATOR && <StyledButton
         onClick={() => navigate("/profile")}

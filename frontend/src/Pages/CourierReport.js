@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 
 export default function NewCouriers() {
     
-    const { userRole } = useContext(UserContext);
+    const { userData } = useContext(UserContext);
 
     const [ filterSort, setFilterSort] = useState("");
     const [ column, setColumn] = useState("");
@@ -25,7 +25,7 @@ export default function NewCouriers() {
                 Kurjerių ataskaitos
               </motion.h2>
                 {
-                    userRole === ROLES.ADMINISTRATOR && (
+                    userData.role === ROLES.ADMINISTRATOR && (
                         <>
                           <motion.h4>
                             Funkcijos

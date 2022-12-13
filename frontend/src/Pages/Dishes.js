@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 export default function Dishes () {
-    const { userRole } = useContext(UserContext);
+    const { userData } = useContext(UserContext);
 
     const navigate = useNavigate();
 
@@ -24,11 +24,9 @@ export default function Dishes () {
     return (
         <div>
             <Navbar/>
-            <SimplePageContent>
-              
-              
+            <SimplePageContent> 
                 {
-                    userRole === ROLES.RESTAURANT && (
+                    userData.role === ROLES.RESTAURANT && (
                         <>
                         <motion.h2 className="header">
                             Patiekalai

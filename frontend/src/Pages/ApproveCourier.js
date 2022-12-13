@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 export default function ApproveCourier() {
 
   const navigate = useNavigate();
-  const { userRole } = useContext(UserContext);
+  const { userData } = useContext(UserContext);
   const [rate, setRate] = useState("");
   const { courierId } = useParams();
   const courier = NewCourierData.find(r => r.courierNumber === Number(courierId));
@@ -30,7 +30,7 @@ export default function ApproveCourier() {
       
     <SimplePageContent>
                 {
-                    userRole === ROLES.ADMINISTRATOR && (
+                    userData.role === ROLES.ADMINISTRATOR && (
                         <>
                             <div style={{padding: '10px'}}>
                                 <b>Kurjerio vardas: </b>{courier.courierName}

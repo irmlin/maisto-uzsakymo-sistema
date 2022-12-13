@@ -133,7 +133,10 @@ app.post('/login', express.json({type: '*/*'}), async (request, response) => {
 			item.ROLENAME === role
 		)).TABLENAME;
 
-		let sql = `SELECT COUNT(id) AS found, id, fk_city_id, username, email, password FROM ${tableName} WHERE email = ? OR username = ?`;
+		const isAdmin = role === ROLES.ADMINISTRATOR.ROLENAME; 
+		let sql = `SELECT COUNT(id) AS found, id` + 
+			(isAdmin ? `` : `, fk_city_id`) +
+			`, username, email, password FROM ${tableName} WHERE email = ? OR username = ?`;
 		let result = await db.executeSqlQuery(sql, [emailOrUsername, emailOrUsername]);
 
 		// check if user exists
@@ -145,10 +148,15 @@ app.post('/login', express.json({type: '*/*'}), async (request, response) => {
 				// if courier, change status to 'logged in'
 				if (role === ROLES.COURIER.ROLENAME) {
 					let sqlUpdateStatus = "UPDATE couriers SET status = ? WHERE id = ?";
-					let updateResult = await db.executeSqlQuery(sqlUpdateStatus, [COURIER_STATES.WAITING_FOR_ORDER, result[0].id]);
+					await db.executeSqlQuery(sqlUpdateStatus, [COURIER_STATES.ONLINE, result[0].id]);
 				}
-				response.status(200).send({success: true, email: result[0].email, role: role,
-					username: result[0].username, id: result[0].id, cityId: result[0].fk_city_id});	
+				let responseData = {success: true, email: result[0].email, role: role,
+					username: result[0].username, id: result[0].id}
+
+				if (!isAdmin) 
+					responseData["cityId"] = result[0].fk_city_id;
+
+				response.status(200).send(responseData);	
 			} else {
 				response.status(401).send({success: false, message: "Neteisingas slaptažodis"});
 			}		

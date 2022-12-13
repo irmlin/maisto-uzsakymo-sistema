@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 
 export default function OrderHistory () {
     
-    const { userRole } = useContext(UserContext);
+    const { userData } = useContext(UserContext);
 
     return (
         <div>
@@ -19,7 +19,7 @@ export default function OrderHistory () {
                 Užsakymų istorija
               </motion.h2>
                 {
-                    userRole === ROLES.COURIER && (
+                    userData.role === ROLES.COURIER && (
                         <>
                           <Table>
                             <TableHead>
@@ -93,7 +93,7 @@ export default function OrderHistory () {
                     )
                 }
                 {
-                    userRole === ROLES.CLIENT && (
+                    userData.role === ROLES.CLIENT && (
                         <>
                           <Table>
                             <TableHead>
@@ -156,7 +156,7 @@ export default function OrderHistory () {
                 }
 
                 {
-                    userRole === ROLES.RESTAURANT && (
+                    userData.role === ROLES.RESTAURANT && (
                         <>
                           <div>
                             <h3>Filtruoti pagal datą</h3>

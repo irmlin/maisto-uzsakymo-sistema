@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 export default function NewCouriers() {
     
     const navigate = useNavigate();
-    const { userRole } = useContext(UserContext);
+    const { userData } = useContext(UserContext);
 
     return (
         <div>
@@ -21,7 +21,7 @@ export default function NewCouriers() {
                 Kurjeriai
               </motion.h2>
                 {
-                    userRole === ROLES.ADMINISTRATOR && (
+                    userData.role === ROLES.ADMINISTRATOR && (
                         <>
                           <Table>
                             <TableHead>

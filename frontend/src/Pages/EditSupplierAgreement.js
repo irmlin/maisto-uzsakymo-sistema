@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 export default function ApproveSupplier() {
 
   const navigate = useNavigate();
-  const { userRole } = useContext(UserContext);
+  const { userData } = useContext(UserContext);
   const [ fee, setFee] = useState("");
   const { supplierId } = useParams();
   const supplier = NewSupplierData.find(r => r.supplierNumber === Number(supplierId));
@@ -30,7 +30,7 @@ export default function ApproveSupplier() {
       
     <SimplePageContent>
                 {
-                    userRole === ROLES.ADMINISTRATOR && (
+                    userData.role === ROLES.ADMINISTRATOR && (
                         <>
                             <div style={{padding: '10px'}}>
                                 <b>Tiekėjo pavadinimas: </b>{supplier.supplierName}

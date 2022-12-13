@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import StyledButton from "../Components/StyledButton";
 export default function NewCouriers() {
     
-    const { userRole } = useContext(UserContext);
+    const { userData } = useContext(UserContext);
 
     const [ filterSort, setFilterSort] = useState("");
     const [ column, setColumn] = useState("");
@@ -24,7 +24,7 @@ export default function NewCouriers() {
                 Tiekėjų ataskaitos
               </motion.h2>
                 {
-                    userRole === ROLES.ADMINISTRATOR && (
+                    userData.role === ROLES.ADMINISTRATOR && (
                         <>
                         <motion.h4>
                             Funkcijos
@@ -139,16 +139,10 @@ export default function NewCouriers() {
                           <div style={{padding: '10px'}}>
                                 <b>Išviso sumokėta mokesčių: </b>{SuppliersReports.totalFees} €
                           </div>
-                        </>
-                        
-                    )
-                    
+                        </>   
+                    )   
                 }
-                
             </SimplePageContent>
-            
-        </div>
-        
+        </div>  
     );
-    
 };

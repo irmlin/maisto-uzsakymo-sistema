@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function Suppliers() {
     
-    const { userRole } = useContext(UserContext);
+    const { userData } = useContext(UserContext);
     const navigate  = useNavigate();
 
     return (
@@ -21,7 +21,7 @@ export default function Suppliers() {
                 Tiekėjai
               </motion.h2>
                 {
-                    userRole === ROLES.ADMINISTRATOR && (
+                    userData.role === ROLES.ADMINISTRATOR && (
                         <>
                           <Table>
                             <TableHead>

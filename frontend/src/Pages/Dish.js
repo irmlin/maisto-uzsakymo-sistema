@@ -8,7 +8,7 @@ import { Button, MenuItem, Select } from "@mui/material";
 
 export default function Dish () {
     
-    const { userRole, userData, setUserData } = useContext(UserContext);
+    const { userData } = useContext(UserContext);
 
     return (
         <div>
@@ -16,7 +16,7 @@ export default function Dish () {
             <SimplePageContent>
                 
                 {
-                    userRole === ROLES.RESTAURANT && (
+                    userData.role === ROLES.RESTAURANT && (
                         <>
                             <motion.h2 className="header">
                                 Patiekalo sukūrimo langas
@@ -51,8 +51,6 @@ export default function Dish () {
                             </div>
                         </>
                     )
-
-                    
                 }
             </SimplePageContent>
         </div>
