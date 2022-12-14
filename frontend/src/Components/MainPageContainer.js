@@ -6,6 +6,7 @@ import CourierOrderDialog from "./CourierOrderDialog";
 import OrderOfferDialog from "./OrderOfferDialog";
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { ShoppingCartContext } from "../Contexts/ShoppingCartContext";
+import { useNavigate } from "react-router-dom";
 
 
 export default function MainPageContainer({children}) {
@@ -14,14 +15,15 @@ export default function MainPageContainer({children}) {
   const [offerOpen, setOfferOpen] = useState(false);
   const [orderOpen, setOrderOpen] = useState(false);
   const { cartItems } = useContext(ShoppingCartContext);
+  const navigate = useNavigate();
 
   return (
     <div>
       {children}
       {
         userData.role === ROLES.CLIENT &&
-        <div style={{position: "fixed", top: 0, right: 0}}>
-          <IconButton>
+        <div style={{position: "fixed", top: 0, right: 0, margin: "10px 10px"}}>
+          <IconButton onClick={() => navigate("/cart")}>
           <Badge badgeContent={cartItems ? cartItems.length : 0} color="secondary">
             <ShoppingCartIcon fontSize="large" style={{color: 'black'}}/>
           </Badge>

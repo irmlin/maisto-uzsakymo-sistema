@@ -4,13 +4,16 @@ import { UserContext } from '../Contexts/UserContext';
 import { updateCourierStatus } from '../Services/UserService';
 import { ROLES } from '../Enums/Enums';
 import { COURIER_STATES } from '../Enums/Enums';
+import { ShoppingCartContext } from '../Contexts/ShoppingCartContext';
 
 export default function Logout() {
 
   const { setIsAuthenticated, userData, setUserData } = useContext(UserContext);
+  const { setCartItems } = useContext(ShoppingCartContext);
 
   localStorage.setItem('userData', JSON.stringify({}));
   localStorage.setItem('isAuthenticated', false);
+  localStorage.removeItem('cartItems');
 
   const logoutCourier = async () => {
     // change courier status to 'offline'
@@ -22,6 +25,7 @@ export default function Logout() {
   useEffect(() => {
     setIsAuthenticated(false);
     setUserData({});
+    setCartItems([]);
     logoutCourier();
   })
 
