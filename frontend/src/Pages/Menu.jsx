@@ -3,9 +3,11 @@ import imgBreakfastMenu from "../img/undraw_breakfast.svg";
 import { useParams } from 'react-router';
 import GridPageContent from "../Components/GridPageContent";
 import Navbar from "../Components/Navbar";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Alert, Snackbar } from "@mui/material";
 import { getRestaurantMeals } from "../Services/RestaurantService";
+import StyledButton from "../Components/StyledButton";
+import { ShoppingCartContext } from "../Contexts/ShoppingCartContext";
 
 export default function Menu() {
 
@@ -23,6 +25,7 @@ export default function Menu() {
   const [snackOpen, setSnackOpen] = useState(false);
   const [snackText, setSnackText] = useState("");
   const [snackColor, setSnackColor] = useState("error");
+  const {cartItems, setCartItems} = useContext(ShoppingCartContext);
 
   const fetchMeals = async () => {
     const response = await getRestaurantMeals(restaurantId);
@@ -53,6 +56,14 @@ export default function Menu() {
     return meals[0] && meals[0].name;
   }
 
+  const addMealToShoppingCart = (event, meal) => {
+    event.preventDefault();
+    console.log(meal)
+    const updatedCart = [...cartItems, meal];
+    setCartItems(updatedCart);
+    localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+  }
+
   return (
     <>
     <Navbar/>
@@ -79,6 +90,9 @@ export default function Menu() {
                   <motion.p className="item-desc">{item.description}</motion.p>
                   <motion.p className="item-desc">Vegetariškas: {item.vegetarian ? "Taip" : "Ne"}</motion.p>
                 </motion.div>
+                <StyledButton onClick={(e) => addMealToShoppingCart(e, item)}>
+                  Į krepšelį
+                </StyledButton>
               </motion.div>
             ))
           }
