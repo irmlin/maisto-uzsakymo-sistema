@@ -8,6 +8,7 @@ import { Alert, Snackbar } from "@mui/material";
 import { getRestaurantMeals } from "../Services/RestaurantService";
 import StyledButton from "../Components/StyledButton";
 import { ShoppingCartContext } from "../Contexts/ShoppingCartContext";
+import ConfirmRestartCartDialog from "../Components/ConfirmRestartCartDialog";
 
 export default function Menu() {
 
@@ -25,11 +26,12 @@ export default function Menu() {
   const [snackOpen, setSnackOpen] = useState(false);
   const [snackText, setSnackText] = useState("");
   const [snackColor, setSnackColor] = useState("error");
+  const [restartDialogOpen, setRestartDialogOpen] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState({});
   const {cartItems, setCartItems} = useContext(ShoppingCartContext);
 
   const fetchMeals = async () => {
     const response = await getRestaurantMeals(restaurantId);
-
     if (!response || !response.data.success) {
       showError(response ? response.data.message : "Serverio klaida");
       return;
@@ -56,12 +58,42 @@ export default function Menu() {
     return meals[0] && meals[0].name;
   }
 
-  const addMealToShoppingCart = (event, meal) => {
-    event.preventDefault();
-    console.log(meal)
+  function mealFromSameRestaurant(newMeal) {
+    if (!cartItems.length) {
+      return true;
+    }
+    return cartItems[0].restaurantId === newMeal.restaurantId;
+  }
+
+  function addMeal(meal) {
     const updatedCart = [...cartItems, meal];
     setCartItems(updatedCart);
     localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+  }
+
+  const addMealToShoppingCart = (event, meal) => {
+    event.preventDefault();
+    setSelectedMeal(meal);
+    if (!mealFromSameRestaurant(meal)) {
+      handleRestartDialogOpen();
+      return;
+    }
+    addMeal(meal);
+  }
+
+  const handleRestartDialogOpen = () => {
+    setRestartDialogOpen(true);
+  }
+
+  const handleRestartDialogClose = () => {
+    setRestartDialogOpen(false);
+  }
+
+  const handleRestartDialogConfirm = () => {
+    const newCart = [selectedMeal];
+    setCartItems(newCart);
+    localStorage.setItem('cartItems', JSON.stringify(newCart));
+    handleRestartDialogClose();
   }
 
   return (
@@ -111,6 +143,12 @@ export default function Menu() {
           {snackText}
         </Alert>
       </Snackbar>
+      <ConfirmRestartCartDialog
+        open={restartDialogOpen}
+        handleClose={handleRestartDialogClose}
+        handleConfirm={handleRestartDialogConfirm}
+        oldRestaurantName={cartItems.length ? cartItems[0].restaurantName : ""}
+      />
     </>
   );
 };

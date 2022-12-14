@@ -296,15 +296,16 @@ app.get('/meals/:restaurantId', async (request, response) => {
 		let id = request.params.restaurantId;
     let sql = 
 		`
-		SELECT m.id, m.name, m.description, m.price, m.vegetarian, r.name as restaurantName
+		SELECT m.id, m.name, m.description, m.price, m.vegetarian, 
+		r.name as restaurantName, m.fk_restaurant_id AS restaurantId, r.name as restaurantName
 		FROM meals AS m
 		RIGHT JOIN restaurants AS r
 		ON r.id = m.fk_restaurant_id
 		WHERE r.id = ${id} 
 		`;
     let result = await db.executeSqlQuery(sql, []);
-    
-    response.status(200).send({success: true, meals: result});
+    !result.length ? response.status(200).send({success: false, message: "Nerasta patiekalų!"}) : 
+		response.status(200).send({success: true, meals: result});
 	}
 	catch (e) {
 		console.log(e);
