@@ -9,7 +9,7 @@ import { ROLES } from "../Enums/Enums";
 
 const Buttons = () => {
   const navigate = useNavigate();
-  const { userData } = useContext(UserContext);
+  const { userData, isAuthenticated } = useContext(UserContext);
 
   return (
     <div
@@ -17,6 +17,13 @@ const Buttons = () => {
         display: flex;
       `}
     >
+      { userData.role === ROLES.COURIER &&
+        <StyledButton
+          onClick={() => navigate("/courier-orders")}
+        >
+          Užsakymai
+        </StyledButton>
+      }
       { userData.role === ROLES.CLIENT &&
         <StyledButton
           onClick={() => navigate("/")}
@@ -25,7 +32,7 @@ const Buttons = () => {
         </StyledButton>
       }
       
-      { userData.role !== ROLES.ADMINISTRATOR && <StyledButton
+      { userData.role !== ROLES.ADMINISTRATOR && isAuthenticated && <StyledButton
         onClick={() => navigate("/profile")}
       >
         Profilis
@@ -37,7 +44,7 @@ const Buttons = () => {
         Patiekalai
       </StyledButton>
       }
-      { userData.role !== ROLES.ADMINISTRATOR && <StyledButton
+      { userData.role !== ROLES.ADMINISTRATOR && isAuthenticated && <StyledButton
         onClick={() => navigate("/order_history")}
       >
         Užsakymų istorija

@@ -1,6 +1,5 @@
 import * as db from "../db.js";
 
-
 const query = 
 `
 DROP TABLE IF EXISTS cart_meals;

@@ -280,8 +280,8 @@ app.get('/cities', async (request, response) => {
 app.get('/restaurants/:cityId', async (request, response) => {
 	try{
 		let id = request.params.cityId;
-    let sql = `SELECT id, name, address, opening_time, closing_time FROM restaurants WHERE approved = 1 AND fk_city_id=${id}`;
-    let result = await db.executeSqlQuery(sql, []);
+    let sql = `SELECT id, name, address, opening_time, closing_time FROM restaurants WHERE approved = 1 AND fk_city_id = ?`;
+    let result = await db.executeSqlQuery(sql, [id]);
     
     response.status(200).send({success: true, restaurants: result});
 	}
@@ -301,11 +301,44 @@ app.get('/meals/:restaurantId', async (request, response) => {
 		FROM meals AS m
 		RIGHT JOIN restaurants AS r
 		ON r.id = m.fk_restaurant_id
-		WHERE r.id = ${id} 
+		WHERE r.id = ?
 		`;
-    let result = await db.executeSqlQuery(sql, []);
+    let result = await db.executeSqlQuery(sql, [id]);
     !result.length ? response.status(200).send({success: false, message: "Nerasta patiekalų!"}) : 
 		response.status(200).send({success: true, meals: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+// fetch orders for courier
+app.get('/orders/:cityId', async (request, response) => {
+	try{
+		let cityId = request.params.cityId;
+    let sql = 
+		`
+		SELECT o.id AS orderId, o.date, o.delivery_address, o.client_comments, o.status AS orderStatus,
+			c.firstname, c.lastname, c.phone_number, c.id AS clientId,
+			crt.id AS cartId, crt.sum AS totalCartPrice,
+			crtm.amount AS currentMealAmount,
+			m.name AS mealName,
+			r.name AS restaurantName, r.address AS restaurantAddress,
+			d.tariff_size AS deliveryTax
+		FROM orders AS o
+		INNER JOIN clients AS c ON c.fk_city_id = ?
+		INNER JOIN carts AS crt ON crt.fk_order_id = o.id
+		INNER JOIN cart_meals AS crtm ON crtm.fk_cart_id = crt.id
+		INNER JOIN meals AS m ON crtm.fk_meal_id = m.id
+		INNER JOIN restaurants AS r ON r.id = m.fk_restaurant_id 
+		INNER JOIN delivery_tariffs AS d on d.id = o.fk_delivery_tariff_id
+		WHERE 
+			(o.status = "Apmokėtas" OR o.status = "Patvirtintas restorano" OR o.status = "Pagamintas")
+			AND o.fk_courier_id IS NOT NULL
+		`;
+    let result = await db.executeSqlQuery(sql, [cityId]);
+		response.status(200).send({success: true, orders: result});
 	}
 	catch (e) {
 		console.log(e);

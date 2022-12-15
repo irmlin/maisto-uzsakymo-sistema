@@ -29,6 +29,7 @@ import ProtectedRoute from './Components/ProtectedRoute';
 import Logout from './Components/Logout';
 import { ShoppingCartContextProvider } from './Contexts/ShoppingCartContext';
 import Cart from './Pages/Cart';
+import CourierOrders from './Pages/CourierOrders';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -63,6 +64,7 @@ ReactDOM.render(
               <Route path="/SuppliersList" element={<SuppliersList/>}/>
               <Route path="/EditCourier/:courierId" element={<EditCourierAgreement/>}/>
               <Route path="/EditSupplier/:supplierId" element={<EditSupplierAgreement/>}/>
+              <Route path="/courier-orders" element={<CourierOrders/>}/>
               <Route path="/logout" element={<Logout/>}/>
             </Route>
 

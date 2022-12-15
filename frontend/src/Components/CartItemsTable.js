@@ -11,7 +11,6 @@ export default function CartItemsTable({items}) {
     "Kaina"
   ];
 
-  // items? console.log("jo"): console.log("ne")
   const totalPrice = items.reduce((sum, item) => sum + item.count * item.meal.price, 0.0);
 
   return (
