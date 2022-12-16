@@ -327,7 +327,7 @@ app.get('/orders/:cityId', async (request, response) => {
 			r.name AS restaurantName, r.address AS restaurantAddress,
 			d.tariff_size AS deliveryTax
 		FROM orders AS o
-		INNER JOIN clients AS c ON c.fk_city_id = ?
+		INNER JOIN clients AS c ON c.id = o.fk_client_id
 		INNER JOIN carts AS crt ON crt.fk_order_id = o.id
 		INNER JOIN cart_meals AS crtm ON crtm.fk_cart_id = crt.id
 		INNER JOIN meals AS m ON crtm.fk_meal_id = m.id
@@ -335,10 +335,51 @@ app.get('/orders/:cityId', async (request, response) => {
 		INNER JOIN delivery_tariffs AS d on d.id = o.fk_delivery_tariff_id
 		WHERE 
 			(o.status = "Apmokėtas" OR o.status = "Patvirtintas restorano" OR o.status = "Pagamintas")
-			AND o.fk_courier_id IS NOT NULL
+			AND o.fk_courier_id IS NULL
+			AND c.fk_city_id = ?
 		`;
     let result = await db.executeSqlQuery(sql, [cityId]);
 		response.status(200).send({success: true, orders: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.put('/orders/:orderId/status', async (request, response) => {  
+	try{
+		let id = request.params.orderId;
+		let newStatus = request.body.newStatus;
+		let sql = 'UPDATE orders SET status = ? WHERE id = ?';
+		let result = await db.executeSqlQuery(sql, [newStatus, id]);
+    response.status(200).send({message: "Užsakymas atnaujintas sėkmingai!", success: true});	
+	}	
+	catch(e) {
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.put('/orders/:orderId/assign-courier', async (request, response) => {  
+	try{
+		let orderId = request.params.orderId;
+		let courierId = request.body.courierId;
+		let sql = 'UPDATE orders SET fk_courier_id = ? WHERE id = ?';
+		let result = await db.executeSqlQuery(sql, [courierId, orderId]);
+    response.status(200).send({message: "Kurjeris priskirtas sėkmingai!", success: true});	
+	}	
+	catch(e) {
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.get('/orders/:orderId/get-one', async (request, response) => {
+	try{
+		let orderId = request.params.orderId;
+    let sql = 
+		`SELECT * from orders WHERE id = ?`;
+    let result = await db.executeSqlQuery(sql, [orderId]);
+		response.status(200).send({success: true, order: result});
 	}
 	catch (e) {
 		console.log(e);

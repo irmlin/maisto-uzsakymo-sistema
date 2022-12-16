@@ -30,50 +30,53 @@ import Logout from './Components/Logout';
 import { ShoppingCartContextProvider } from './Contexts/ShoppingCartContext';
 import Cart from './Pages/Cart';
 import CourierOrders from './Pages/CourierOrders';
+import { CourierContextProvider } from './Contexts/CourierContext';
 
 ReactDOM.render(
   <React.StrictMode>
     <UserContextProvider>
       <ShoppingCartContextProvider>
-        <Router>
-          <MainPageContainer>
-          <Routes>
+        <CourierContextProvider>
+          <Router>
+            <MainPageContainer>
+            <Routes>
 
-            {/* These paths are accessible to anyone */}
-            <Route path="/login" element={<Login/>}/>
-            <Route path="/register" element={<Register/>}/>
+              {/* These paths are accessible to anyone */}
+              <Route path="/login" element={<Login/>}/>
+              <Route path="/register" element={<Register/>}/>
 
-            {/* These are all the protected routes. A user that is not logged in will be redirected to /login when trying to access them. */}
-            <Route element={<ProtectedRoute/>}>
-              <Route path="/" element={<App/>}></Route>
-              <Route path="/profile" element={<Profile/>}/>
-              <Route path="/cart" element={<Cart/>}/>
-              <Route path="/menu/:restaurantId" element={<Menu/>}/>
-              <Route path="/order_history" element={<OrderHistory/>} />
-              <Route path="/dishes" element={<Dishes/>}/>
-              <Route path="/dish" element={<Dish/>}/>
-              <Route path="/dishedit" element={<DishEdit/>}/>
-              <Route path="/newCouriers" element={<NewCourierData/>}/>
-              <Route path="/newSuppliers" element={<NewSupplierData/>}/>
-              <Route path="/ApproveCourier/:courierId" element={<ApproveCourier/>}/>
-              <Route path="/ApproveSupplier/:supplierId" element={<ApproveSupplier/>}/>
-              <Route path="/ClientsReports" element={<ClientsReport/>}/>
-              <Route path="/CouriersReports" element={<CouriersReport/>}/>
-              <Route path="/SuppliersReports" element={<SuppliersReport/>}/>
-              <Route path="/CouriersList" element={<CouriersList/>}/>
-              <Route path="/SuppliersList" element={<SuppliersList/>}/>
-              <Route path="/EditCourier/:courierId" element={<EditCourierAgreement/>}/>
-              <Route path="/EditSupplier/:supplierId" element={<EditSupplierAgreement/>}/>
-              <Route path="/courier-orders" element={<CourierOrders/>}/>
-              <Route path="/logout" element={<Logout/>}/>
-            </Route>
+              {/* These are all the protected routes. A user that is not logged in will be redirected to /login when trying to access them. */}
+              <Route element={<ProtectedRoute/>}>
+                <Route path="/" element={<App/>}></Route>
+                <Route path="/profile" element={<Profile/>}/>
+                <Route path="/cart" element={<Cart/>}/>
+                <Route path="/menu/:restaurantId" element={<Menu/>}/>
+                <Route path="/order_history" element={<OrderHistory/>} />
+                <Route path="/dishes" element={<Dishes/>}/>
+                <Route path="/dish" element={<Dish/>}/>
+                <Route path="/dishedit" element={<DishEdit/>}/>
+                <Route path="/newCouriers" element={<NewCourierData/>}/>
+                <Route path="/newSuppliers" element={<NewSupplierData/>}/>
+                <Route path="/ApproveCourier/:courierId" element={<ApproveCourier/>}/>
+                <Route path="/ApproveSupplier/:supplierId" element={<ApproveSupplier/>}/>
+                <Route path="/ClientsReports" element={<ClientsReport/>}/>
+                <Route path="/CouriersReports" element={<CouriersReport/>}/>
+                <Route path="/SuppliersReports" element={<SuppliersReport/>}/>
+                <Route path="/CouriersList" element={<CouriersList/>}/>
+                <Route path="/SuppliersList" element={<SuppliersList/>}/>
+                <Route path="/EditCourier/:courierId" element={<EditCourierAgreement/>}/>
+                <Route path="/EditSupplier/:supplierId" element={<EditSupplierAgreement/>}/>
+                <Route path="/courier-orders" element={<CourierOrders/>}/>
+                <Route path="/logout" element={<Logout/>}/>
+              </Route>
 
-            {/* For invalid paths, redirect to /login */}
-            <Route path="/*" element={<Login/>} />
-            
-          </Routes>
-          </MainPageContainer>
-        </Router>
+              {/* For invalid paths, redirect to /login */}
+              <Route path="/*" element={<Login/>} />
+              
+            </Routes>
+            </MainPageContainer>
+          </Router>
+        </CourierContextProvider>
       </ShoppingCartContextProvider>
     </UserContextProvider>
     <Global

@@ -123,7 +123,7 @@ CREATE TABLE orders
 	price double precision,
 	delivery_address varchar (100),
 	client_comments varchar (255),
-	status ENUM('Sudaromas', 'Apmokėtas', 'Vykdomas', 'Maistas paimtas', 'Užbaigtas', 'Atšauktas') DEFAULT('Sudaromas'),
+	status ENUM("Apmokėtas", "Patvirtintas restorano", "Pagamintas", "Maistas paimtas", "Užbaigtas", "Atšauktas"),
 	fk_courier_id int,
 	fk_delivery_tariff_id int,
 	fk_client_id int,

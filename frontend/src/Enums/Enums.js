@@ -66,15 +66,14 @@ export const ORDER_STATES = Object.freeze({
   PAYED: "Apmokėtas",                                 // when user created the order
   APPROVED_BY_RESTAURANT: "Patvirtintas restorano",   // when restaurant sees the order and accepts it
   DONE_COOKING: "Pagamintas",                         // when restaurant is finished cooking the food
-  FOOD_TAKEN: "Maistas paimtas iš restorano",         // when courier has taken the food
+  FOOD_TAKEN: "Maistas paimtas",                      // when courier has taken the food
   COMPLETED: "Užbaigtas",                             // when courier has delivered the food
   CANCELLED: "Atšauktas"                              // when client or restaurant cancel the order
 });
 
 export const ORDER_STATES_FOR_COURIER = Object.freeze({
-  IN_PROGRESS: "Vykdomas",
-  FOOD_TAKEN: "Maistas paimtas iš restorano",
-  COMPLETED: "Pristatytas"
+  FOOD_TAKEN: "Maistas paimtas",
+  COMPLETED: "Užbaigtas"         
 });
 
 export const IMMUTABLE_PROFILE_INFO_COURIER = [
