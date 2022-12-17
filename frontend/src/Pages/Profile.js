@@ -154,6 +154,10 @@ export default function Profile() {
     }
   };
 
+  function transformDateString(date) {
+    return date.substring(0, 10);
+  }
+
   return (
     <div>
       <Navbar />
@@ -167,7 +171,7 @@ export default function Profile() {
                     <TableCell>
                       <b>{colName}</b>
                     </TableCell>
-                    <TableCell>{courierDataToShow[i]}</TableCell>
+                    <TableCell>{i === 2 ? transformDateString(courierDataToShow[i]) : courierDataToShow[i]}</TableCell>
                   </TableRow>
                 ))}
                 <TableRow>

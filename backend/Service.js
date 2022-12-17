@@ -331,17 +331,15 @@ app.get('/orders/:cityId', async (request, response) => {
 			crt.id AS cartId, crt.sum AS totalCartPrice,
 			crtm.amount AS currentMealAmount,
 			m.name AS mealName,
-			r.name AS restaurantName, r.address AS restaurantAddress,
-			d.tariff_size AS deliveryTax
+			r.name AS restaurantName, r.address AS restaurantAddress
 		FROM orders AS o
 		INNER JOIN clients AS c ON c.id = o.fk_client_id
 		INNER JOIN carts AS crt ON crt.fk_order_id = o.id
 		INNER JOIN cart_meals AS crtm ON crtm.fk_cart_id = crt.id
 		INNER JOIN meals AS m ON crtm.fk_meal_id = m.id
-		INNER JOIN restaurants AS r ON r.id = m.fk_restaurant_id 
-		INNER JOIN delivery_tariffs AS d on d.id = o.fk_delivery_tariff_id
+		INNER JOIN restaurants AS r ON r.id = m.fk_restaurant_id
 		WHERE 
-			(o.status = "Apmokėtas" OR o.status = "Patvirtintas restorano" OR o.status = "Pagamintas")
+			(o.status = "Užsakytas kliento" OR o.status = "Patvirtintas restorano" OR o.status = "Pagamintas")
 			AND o.fk_courier_id IS NULL
 			AND c.fk_city_id = ?
 		`;
@@ -371,13 +369,19 @@ app.put('/orders/:orderId/assign-courier', async (request, response) => {
 	try{
 		let orderId = request.params.orderId;
 		let courierId = request.body.courierId;
-		let sql = 'UPDATE orders SET fk_courier_id = ? WHERE id = ?';
-		let result = await db.executeSqlQuery(sql, [courierId, orderId]);
+
+		let sqlDelivery = `SELECT id FROM delivery_tariffs  
+		WHERE fk_courier_id = ? AND NOW() >= applied_from AND NOW() <= applied_until`;
+		let resultDelivery = await db.executeSqlQuery(sqlDelivery, [courierId]);
+
+		let sql = 'UPDATE orders SET fk_courier_id = ?, fk_delivery_tariff_id = ? WHERE id = ?';
+		let result = await db.executeSqlQuery(sql, [courierId, resultDelivery[0].id, orderId]);
 		let sqlStatus = 'UPDATE couriers set status = ? WHERE id = ?';
 		let resultStatus = await db.executeSqlQuery(sqlStatus, [COURIER_STATES.BUSY, courierId]);
     response.status(200).send({message: "Kurjeris priskirtas sėkmingai!", success: true});	
 	}	
 	catch(e) {
+		console.log(e)
 		response.status(400).send({message: e.sqlMessage, success: false});
 	}
 })
@@ -491,7 +495,7 @@ app.put('/unaprovedCouriers/:id', async (request, response) => {
     	let sql = `INSERT INTO delivery_tariffs (applied_from, applied_until, tariff_size, fk_courier_id, fk_admin_id) VALUES (NOW(), DATE_ADD(NOW(), INTERVAL 365 DAY), ?, ?, ?)`;
     	let result = await db.executeSqlQuery(sql, [tax, courierId, adminId]);
 
-		let sql2 = `UPDATE couriers SET approved = ? WHERE id = ?`;
+		let sql2 = `UPDATE couriers SET approved = ?, employed_from = NOW() WHERE id = ?`;
 		let result2 = await db.executeSqlQuery(sql2, [1, courierId]);
 
     	response.status(200).send({success: true});

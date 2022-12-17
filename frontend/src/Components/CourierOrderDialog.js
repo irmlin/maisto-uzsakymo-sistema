@@ -70,8 +70,6 @@ export default function CourierOrderDialog({open, setOpen}) {
     "Restorano adresas: ",
     "Patiekalai: ",
     "Bendra kaina už maistą: ",
-    "Pristatymo kaina: ",
-    "Viso: ",
     "Dabartinė užsakymo būsena: "
   ];
 
@@ -83,8 +81,6 @@ export default function CourierOrderDialog({open, setOpen}) {
     orderInfo.basicInfo.restaurantAddress,
     orderInfo.mealInfo.reduce((text, meal) => {return text + `${meal.mealName} (x${meal.amount}), `}, ""),
     orderInfo.basicInfo.totalCartPrice + "€",
-    orderInfo.basicInfo.deliveryTax + "€",
-    orderInfo.basicInfo.totalCartPrice + orderInfo.basicInfo.deliveryTax + "€",
     orderInfo.basicInfo.orderStatus
   ]
 

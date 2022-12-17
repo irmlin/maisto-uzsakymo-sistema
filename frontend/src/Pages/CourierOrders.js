@@ -64,13 +64,13 @@ export default function CourierOrders() {
 
     const {
       cartId, clientId, client_comments,
-      date, deliveryTax, delivery_address, firstname, lastname,
+      date, delivery_address, firstname, lastname,
       orderId, orderStatus, phone_number, restaurantAddress, restaurantName, totalCartPrice
     } = orderInfoRaw[0];
 
     const orderInfoToSave = {
       basicInfo: {
-        cartId, clientId, client_comments, date, deliveryTax,
+        cartId, clientId, client_comments, date,
         delivery_address, firstname, lastname, orderId, orderStatus,
         phone_number, restaurantAddress, restaurantName, totalCartPrice
       }, 

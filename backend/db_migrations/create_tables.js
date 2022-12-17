@@ -123,7 +123,7 @@ CREATE TABLE orders
 	price double precision,
 	delivery_address varchar (100),
 	client_comments varchar (255),
-	status ENUM("Apmokėtas", "Patvirtintas restorano", "Pagamintas", "Maistas paimtas", "Užbaigtas", "Atšauktas"),
+	status ENUM("Užsakytas kliento", "Patvirtintas restorano", "Pagamintas", "Maistas paimtas", "Užbaigtas", "Atšauktas"),
 	fk_courier_id int,
 	fk_delivery_tariff_id int,
 	fk_client_id int,
@@ -132,6 +132,7 @@ CREATE TABLE orders
   FOREIGN KEY (fk_delivery_tariff_id) REFERENCES delivery_tariffs(id),
   FOREIGN KEY (fk_client_id) REFERENCES clients(id)
 );
+
 
 CREATE TABLE meals
 (
