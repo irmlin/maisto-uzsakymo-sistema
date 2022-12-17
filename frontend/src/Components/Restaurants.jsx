@@ -31,7 +31,6 @@ export default function MenuAll() {
   }, []);
 
   function showError(message) {
-    setSnackOpen(false);
     setSnackText(message);
     setSnackOpen(true);
   }

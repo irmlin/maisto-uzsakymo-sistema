@@ -1,21 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import {TextField, MenuItem, InputLabel, Select} from "@mui/material";
+import { TextField, MenuItem, InputLabel, Select } from "@mui/material";
 import Avatar from "@mui/material/Avatar";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
-import {ROLES, TRANSPORT_TYPES} from "../Enums/Enums";
+import { ROLES, TRANSPORT_TYPES } from "../Enums/Enums";
 import Navbar from "../Components/Navbar";
 import SimplePageContent from "../Components/SimplePageContent";
 import { getCitiesCounties } from "../Services/CityService";
 import { registerNewUser } from "../Services/UserService";
-
+import { UserContext } from "../Contexts/UserContext";
 
 export default function Register() {
-  const [selectedRole, setSelectedRole] = useState(ROLES.CLIENT);
+  const { isAuthenticated } = useContext(UserContext);
+
+  const [selectedRole, setSelectedRole] = useState(
+    isAuthenticated ? ROLES.ADMINISTRATOR : ROLES.CLIENT
+  );
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -25,7 +29,7 @@ export default function Register() {
   const [birthDate, setbirthDate] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [restaurantName, setRestaurantName] = useState("");
-  const [transport, setTransport] = useState(TRANSPORT_TYPES.CAR)
+  const [transport, setTransport] = useState(TRANSPORT_TYPES.CAR);
   const [cityId, setCityId] = useState();
   const [county, setCounty] = useState();
   const [address, setAddress] = useState("");
@@ -34,192 +38,316 @@ export default function Register() {
 
   const [citiesCounties, setCitiesCounties] = useState([]);
 
-  const [visibleFields, setVisibleFields] = useState({
-    firstName: true,
-    lastName: true,
-    email: true,
-    username: true,
-    password: true,
-    personalCode: true,
-    birthDate: true,
-    phoneNumber: true,
-    restaurantName: false,
-    transport: false,
-    cityId: true,
-    county: true,
-    address: false,
-    openingTime: false,
-    closingTime: false
-  });
-  
+  const [visibleFields, setVisibleFields] = useState(
+    selectedRole !== ROLES.ADMINISTRATOR
+      ? {
+          firstName: true,
+          lastName: true,
+          email: true,
+          username: true,
+          password: true,
+          personalCode: true,
+          birthDate: true,
+          phoneNumber: true,
+          restaurantName: false,
+          transport: false,
+          cityId: true,
+          county: true,
+          address: false,
+          openingTime: false,
+          closingTime: false,
+        }
+      : {
+          firstName: true,
+          lastName: true,
+          email: true,
+          username: true,
+          password: true,
+          personalCode: false,
+          birthDate: false,
+          phoneNumber: true,
+          restaurantName: false,
+          transport: false,
+          cityId: false,
+          county: false,
+          address: false,
+          openingTime: false,
+          closingTime: false,
+        }
+  );
+
   const [snackOpen, setSnackOpen] = useState(false);
   const [snackText, setSnackText] = useState("");
   const [snackColor, setSnackColor] = useState("success");
 
   const fetchCities = async () => {
     const response = await getCitiesCounties();
-    if(response.status === 200) {
-        setCitiesCounties(response.data.result)
-        setCityId(response.data.result[0].id);
-        setCounty(response.data.result[0].county);
+    if (response.status === 200) {
+      setCitiesCounties(response.data.result);
+      setCityId(response.data.result[0].id);
+      setCounty(response.data.result[0].county);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchCities();
-  }, [])
+    setSelectedRole(isAuthenticated ? ROLES.ADMINISTRATOR : ROLES.CLIENT);
+    !isAuthenticated ?
+      setVisibleFields({
+        firstName: true,
+        lastName: true,
+        email: true,
+        username: true,
+        password: true,
+        personalCode: true,
+        birthDate: true,
+        phoneNumber: true,
+        restaurantName: false,
+        transport: false,
+        cityId: true,
+        county: true,
+        address: false,
+        openingTime: false,
+        closingTime: false,
+      })
+    : setVisibleFields({
+        firstName: true,
+        lastName: true,
+        email: true,
+        username: true,
+        password: true,
+        personalCode: false,
+        birthDate: false,
+        phoneNumber: true,
+        restaurantName: false,
+        transport: false,
+        cityId: false,
+        county: false,
+        address: false,
+        openingTime: false,
+        closingTime: false,
+      });
+    !isAuthenticated && fetchCities();
+  }, [isAuthenticated]);
 
   const navigate = useNavigate();
-  const rolesWithoutAdmin = (({ CLIENT, COURIER, RESTAURANT }) => ({ CLIENT, COURIER, RESTAURANT }))(ROLES)
+  const rolesWithoutAdmin = (({ CLIENT, COURIER, RESTAURANT }) => ({
+    CLIENT,
+    COURIER,
+    RESTAURANT,
+  }))(ROLES);
 
   function validatePhoneNumber() {
     const errorMsg = "Įveskite galiojantį telefono numerį!";
-    try{
+    try {
       const number = parseInt(phoneNumber);
-      if (!isNaN(phoneNumber) && number > 0)
-        return {valid: true}
-      return {valid: false, message: errorMsg};
-    }
-    catch(e){
-      return {valid: false, message: errorMsg};
+      if (!isNaN(phoneNumber) && number > 0) return { valid: true };
+      return { valid: false, message: errorMsg };
+    } catch (e) {
+      return { valid: false, message: errorMsg };
     }
   }
 
   function validatePersonalCode() {
     const errorMsg = "Įveskite galiojantį asmens kodą!";
-    try{
+    try {
       const code = parseInt(personalCode);
-      if (!isNaN(personalCode) && code > 0)
-        return {valid: true}
-      return {valid: false, message: errorMsg};
-    }
-    catch(e){
-      return {valid: false, message: errorMsg};
+      if (!isNaN(personalCode) && code > 0) return { valid: true };
+      return { valid: false, message: errorMsg };
+    } catch (e) {
+      return { valid: false, message: errorMsg };
     }
   }
 
   function validateForm() {
     let empty;
     const emptyMsg = "Užpildykite visus formos laukus!";
-    if (selectedRole === ROLES.RESTAURANT){
-      empty = !email || !username || !password  || !restaurantName || !cityId || !address || !openingTime || !closingTime;
-      return {valid: !empty, message: empty ? emptyMsg : ""};
-    }
-    else if (selectedRole === ROLES.CLIENT) {
-      empty = !firstName || !lastName || !email || !username || !password || !personalCode || !birthDate || !phoneNumber || !cityId;
-    
+    if (selectedRole === ROLES.RESTAURANT) {
+      empty =
+        !email ||
+        !username ||
+        !password ||
+        !restaurantName ||
+        !cityId ||
+        !address ||
+        !openingTime ||
+        !closingTime;
+      return { valid: !empty, message: empty ? emptyMsg : "" };
+    } else if (selectedRole === ROLES.ADMINISTRATOR) {
+      empty =
+        !firstName ||
+        !lastName ||
+        !email ||
+        !password ||
+        !username ||
+        !phoneNumber;
+        if (empty) return { valid: !empty, message: emptyMsg };
+        const validNumber = validatePhoneNumber();
+        if (!validNumber.valid) return validNumber;
+        return { valid: true };
+    } else if (selectedRole === ROLES.CLIENT) {
+      empty =
+        !firstName ||
+        !lastName ||
+        !email ||
+        !username ||
+        !password ||
+        !personalCode ||
+        !birthDate ||
+        !phoneNumber ||
+        !cityId;
     } else {
-      empty = !firstName || !lastName || !email || !username || !password || !personalCode || !birthDate || !phoneNumber || !transport || !cityId;
+      empty =
+        !firstName ||
+        !lastName ||
+        !email ||
+        !username ||
+        !password ||
+        !personalCode ||
+        !birthDate ||
+        !phoneNumber ||
+        !transport ||
+        !cityId;
     }
-    if (empty)
-      return {valid: !empty, message: emptyMsg};
+    if (empty) return { valid: !empty, message: emptyMsg };
     const validNumber = validatePhoneNumber();
-    if (!validNumber.valid)
-      return validNumber;
+    if (!validNumber.valid) return validNumber;
     const validCode = validatePersonalCode();
-    if (!validCode.valid)
-      return validCode
-    return {valid: true}
+    if (!validCode.valid) return validCode;
+    return { valid: true };
   }
 
-  const counties = citiesCounties.map(item => item.county).filter((value, index, self) => self.indexOf(value) === index);
+  const counties = citiesCounties
+    .map((item) => item.county)
+    .filter((value, index, self) => self.indexOf(value) === index);
 
   const onRoleSelectChange = (event) => {
     setSelectedRole(event.target.value);
     if (event.target.value === ROLES.CLIENT) {
-        setVisibleFields({...visibleFields,     
-            firstName: true,
-            lastName: true,
-            email: true,
-            username: true,
-            password: true,
-            personalCode: true,
-            birthDate: true,
-            phoneNumber: true,
-            restaurantName: false,
-            transport: false,
-            cityId: true,
-            county: true,
-            address: false,
-            openingTime: false,
-            closingTime: false});
+      setVisibleFields({
+        ...visibleFields,
+        firstName: true,
+        lastName: true,
+        email: true,
+        username: true,
+        password: true,
+        personalCode: true,
+        birthDate: true,
+        phoneNumber: true,
+        restaurantName: false,
+        transport: false,
+        cityId: true,
+        county: true,
+        address: false,
+        openingTime: false,
+        closingTime: false,
+      });
     } else if (event.target.value === ROLES.COURIER) {
-        setVisibleFields({...visibleFields,     
-            firstName: true,
-            lastName: true,
-            email: true,
-            username: true,
-            password: true,
-            personalCode: true,
-            birthDate: true,
-            phoneNumber: true,
-            restaurantName: false,
-            transport: true,
-            cityId: true,
-            county: true,
-            address: false,
-            openingTime: false,
-            closingTime: false});
+      setVisibleFields({
+        ...visibleFields,
+        firstName: true,
+        lastName: true,
+        email: true,
+        username: true,
+        password: true,
+        personalCode: true,
+        birthDate: true,
+        phoneNumber: true,
+        restaurantName: false,
+        transport: true,
+        cityId: true,
+        county: true,
+        address: false,
+        openingTime: false,
+        closingTime: false,
+      });
+    } else if (event.target.value === ROLES.RESTAURANT) {
+      setVisibleFields({
+        ...visibleFields,
+        firstName: false,
+        lastName: false,
+        email: true,
+        username: true,
+        password: true,
+        personalCode: false,
+        birthDate: false,
+        phoneNumber: false,
+        restaurantName: true,
+        transport: false,
+        cityId: true,
+        county: true,
+        address: true,
+        openingTime: true,
+        closingTime: true,
+      });
     } else {
-        setVisibleFields({...visibleFields,     
-            firstName: false,
-            lastName: false,
-            email: true,
-            username: true,
-            password: true,
-            personalCode: false,
-            birthDate: false,
-            phoneNumber: false,
-            restaurantName: true,
-            transport: false,
-            cityId: true,
-            county: true,
-            address: true,
-            openingTime: true,
-            closingTime: true});
+      setVisibleFields({
+        ...visibleFields,
+        firstName: true,
+        lastName: true,
+        email: true,
+        username: true,
+        password: true,
+        personalCode: false,
+        birthDate: false,
+        phoneNumber: true,
+        restaurantName: false,
+        transport: false,
+        cityId: false,
+        county: false,
+        address: false,
+        openingTime: false,
+        closingTime: false,
+      });
     }
-    
-  }
+  };
 
   function getDataObject() {
     if (selectedRole === ROLES.COURIER) {
       return {
-        "firstName": firstName,
-        "lastName": lastName,
-        "email": email,
-        "username": username,
-        "password": password,
-        "personalCode": personalCode,
-        "birthDate": birthDate,
-        "phoneNumber": phoneNumber,
-        "transport": transport,
-        "cityId": cityId
-      }
-    }
-    else if (selectedRole === ROLES.CLIENT) {
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        username: username,
+        password: password,
+        personalCode: personalCode,
+        birthDate: birthDate,
+        phoneNumber: phoneNumber,
+        transport: transport,
+        cityId: cityId,
+      };
+    } else if (selectedRole === ROLES.CLIENT) {
       return {
-        "firstName": firstName,
-        "lastName": lastName,
-        "email": email,
-        "username": username,
-        "password": password,
-        "personalCode": personalCode,
-        "birthDate": birthDate,
-        "phoneNumber": phoneNumber,
-        "cityId": cityId
-      }
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        username: username,
+        password: password,
+        personalCode: personalCode,
+        birthDate: birthDate,
+        phoneNumber: phoneNumber,
+        cityId: cityId,
+      };
     }
-    if (selectedRole === ROLES.RESTAURANT) {
+    else if (selectedRole === ROLES.RESTAURANT) {
       return {
-        "email": email,
-        "username": username,
-        "password": password,
-        "restaurantName": restaurantName,
-        "cityId": cityId,
-        "address": address,
-        "openingTime": openingTime,
-        "closingTime": closingTime
-      }
+        email: email,
+        username: username,
+        password: password,
+        restaurantName: restaurantName,
+        cityId: cityId,
+        address: address,
+        openingTime: openingTime,
+        closingTime: closingTime,
+      };
+    } else {
+      return {
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        username: username,
+        password: password,
+        phoneNumber: phoneNumber
+      };
     }
   }
 
@@ -240,8 +368,17 @@ export default function Register() {
     if (response) {
       if (response.data.success) {
         setSnackColor("success");
-        setSnackText("Registracija sėkminga, nukreipiame į prisijungimo puslapį...");
-        setTimeout(() => navigate('/login'), 2000);
+        if (selectedRole !== ROLES.ADMINISTRATOR) {
+          setSnackText(
+            "Registracija sėkminga, nukreipiame į prisijungimo puslapį..."
+          );
+          setTimeout(() => navigate("/login"), 2000);  
+        } else {
+          setSnackText(
+            "Administratorius sukurtas sėkmingai!"
+          );
+        }
+
       } else {
         setSnackColor("error");
         setSnackText(response.data.message);
@@ -254,7 +391,7 @@ export default function Register() {
 
   return (
     <div>
-      <Navbar/>
+      <Navbar />
       <SimplePageContent>
         <Box
           sx={{
@@ -280,18 +417,18 @@ export default function Register() {
           >
             <InputLabel id="role-select-label">Vartotojo rolė</InputLabel>
             <Select
-                labelId="role-select-label"
-                fullWidth
-                id="role-select"
-                value={selectedRole}
-                label="Pasirinkite rolę"
-                onChange={onRoleSelectChange}
+              labelId="role-select-label"
+              fullWidth
+              id="role-select"
+              value={selectedRole}
+              label="Pasirinkite rolę"
+              onChange={onRoleSelectChange}
             >
-                {
-                    Object.entries(rolesWithoutAdmin).map(([key, role]) => (
-                        <MenuItem key={role} value={role}>{role}</MenuItem>
-                    ))
-                }
+              {Object.entries(selectedRole === ROLES.ADMINISTRATOR ? {1: ROLES.ADMINISTRATOR} : rolesWithoutAdmin).map(([key, role]) => (
+                <MenuItem key={role} value={role}>
+                  {role}
+                </MenuItem>
+              ))}
             </Select>
             <TextField
               margin="normal"
@@ -299,76 +436,76 @@ export default function Register() {
               fullWidth
               type="email"
               id="email"
-              sx={{display: visibleFields.email ? "block" : "none"}}
+              sx={{ display: visibleFields.email ? "block" : "none" }}
               label="E-pašto adresas"
               name="email"
               autoComplete="off"
               autoFocus
-              onChange={event => setEmail(event.target.value)}
+              onChange={(event) => setEmail(event.target.value)}
               value={email}
             />
             <TextField
               margin="normal"
-              sx={{display: visibleFields.firstName ? "block" : "none"}}
+              sx={{ display: visibleFields.firstName ? "block" : "none" }}
               required
               fullWidth
               name="firstname"
               label="Vardas"
               id="firstname"
               autoComplete="off"
-              onChange={event => setFirstName(event.target.value)}
+              onChange={(event) => setFirstName(event.target.value)}
               value={firstName}
             />
             <TextField
               margin="normal"
-              sx={{display: visibleFields.lastName ? "block" : "none"}}
+              sx={{ display: visibleFields.lastName ? "block" : "none" }}
               required
               fullWidth
               name="lastname"
               label="Pavardė"
               id="lastname"
               autoComplete="off"
-              onChange={event => setLastName(event.target.value)}
+              onChange={(event) => setLastName(event.target.value)}
               value={lastName}
             />
             <TextField
               margin="normal"
-              sx={{display: visibleFields.username ? "block" : "none"}}
+              sx={{ display: visibleFields.username ? "block" : "none" }}
               required
               fullWidth
               name="username"
               label="Vartotojo Vardas"
               id="username"
               autoComplete="off"
-              onChange={event => setusername(event.target.value)}
+              onChange={(event) => setusername(event.target.value)}
               value={username}
             />
             <TextField
               margin="normal"
-              sx={{display: visibleFields.phoneNumber ? "block" : "none"}}
+              sx={{ display: visibleFields.phoneNumber ? "block" : "none" }}
               required
               fullWidth
               name="phonenumber"
               label="Telefono Numeris"
               id="phonenumber"
               autoComplete="off"
-              onChange={event => setPhoneNumber(event.target.value)}
+              onChange={(event) => setPhoneNumber(event.target.value)}
               value={phoneNumber}
             />
             <TextField
               margin="normal"
-              sx={{display: visibleFields.personalCode ? "block" : "none"}}
+              sx={{ display: visibleFields.personalCode ? "block" : "none" }}
               required
               fullWidth
               name="personalCode"
               label="Asmens Kodas"
               id="personalCode"
               autoComplete="off"
-              onChange={event => setpersonalCode(event.target.value)}
+              onChange={(event) => setpersonalCode(event.target.value)}
               value={personalCode}
             />
             <TextField
-            sx={{display: visibleFields.birthDate ? "block" : "none"}}
+              sx={{ display: visibleFields.birthDate ? "block" : "none" }}
               margin="normal"
               required
               type="date"
@@ -377,12 +514,12 @@ export default function Register() {
               label="Gimimo Data"
               id="birthDate"
               autoComplete="off"
-              onChange={event => setbirthDate(event.target.value)}
-              InputLabelProps={{ shrink: true }}  
+              onChange={(event) => setbirthDate(event.target.value)}
+              InputLabelProps={{ shrink: true }}
               value={birthDate}
             />
             <TextField
-            sx={{display: visibleFields.restaurantName ? "block" : "none"}}
+              sx={{ display: visibleFields.restaurantName ? "block" : "none" }}
               margin="normal"
               required
               fullWidth
@@ -390,76 +527,96 @@ export default function Register() {
               label="Restorano Pavadinimas"
               id="restaurantname"
               autoComplete="off"
-              onChange={event => setRestaurantName(event.target.value)}
+              onChange={(event) => setRestaurantName(event.target.value)}
               value={restaurantName}
             />
-            <InputLabel sx={{display: visibleFields.county ? "block" : "none"}} id="county-select-label">Apskritis</InputLabel>
+            <InputLabel
+              sx={{ display: visibleFields.county ? "block" : "none" }}
+              id="county-select-label"
+            >
+              Apskritis
+            </InputLabel>
             <Select
               labelId="county-select-label"
-              sx={{display: visibleFields.county ? "block" : "none"}}
+              sx={{ display: visibleFields.county ? "block" : "none" }}
               fullWidth
               id="county-select"
               value={county ? county : ""}
               label="Pasirinkite Apskritį"
-              onChange={event => 
-                {
-                  setCounty(event.target.value);
-                  setCityId(citiesCounties.find(item => item.county === event.target.value).id);
+              onChange={(event) => {
+                setCounty(event.target.value);
+                setCityId(
+                  citiesCounties.find(
+                    (item) => item.county === event.target.value
+                  ).id
+                );
               }}
             >
-              {
-                  counties.map(item => (
-                      <MenuItem key={item} value={item}>{item}</MenuItem>
-                  ))
-              }
+              {counties.map((item) => (
+                <MenuItem key={item} value={item}>
+                  {item}
+                </MenuItem>
+              ))}
             </Select>
-            <InputLabel sx={{display: visibleFields.cityId ? "block" : "none"}} id="cityId-select-label">Miestas</InputLabel>
-            <Select
-                labelId="cityId-select-label"
-                sx={{display: visibleFields.cityId ? "block" : "none"}}
-                fullWidth
-                id="cityId-select"
-                value={cityId ? cityId : ""}
-                label="Pasirinkite Miestą"
-                onChange={event => setCityId(event.target.value)}
+            <InputLabel
+              sx={{ display: visibleFields.cityId ? "block" : "none" }}
+              id="cityId-select-label"
             >
-                {
-                    citiesCounties.filter(item => item.county === county).map(item => (
-                        <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>
-                    ))
-                }
+              Miestas
+            </InputLabel>
+            <Select
+              labelId="cityId-select-label"
+              sx={{ display: visibleFields.cityId ? "block" : "none" }}
+              fullWidth
+              id="cityId-select"
+              value={cityId ? cityId : ""}
+              label="Pasirinkite Miestą"
+              onChange={(event) => setCityId(event.target.value)}
+            >
+              {citiesCounties
+                .filter((item) => item.county === county)
+                .map((item) => (
+                  <MenuItem key={item.id} value={item.id}>
+                    {item.name}
+                  </MenuItem>
+                ))}
             </Select>
-            <InputLabel sx={{display: visibleFields.transport ? "block" : "none"}} id="transport-select-label">Transporto priemonė</InputLabel>
-            <Select
-                labelId="transport-select-label"
-                sx={{display: visibleFields.transport ? "block" : "none"}}
-                fullWidth
-                id="transport-select"
-                value={transport}
-                label="Pasirinkite Transporto Priemonę"
-                onChange={event => setTransport(event.target.value)}
+            <InputLabel
+              sx={{ display: visibleFields.transport ? "block" : "none" }}
+              id="transport-select-label"
             >
-                {
-                    Object.values(TRANSPORT_TYPES).map(item => (
-                        <MenuItem key={item} value={item}>{item}</MenuItem>
-                    ))
-                }
+              Transporto priemonė
+            </InputLabel>
+            <Select
+              labelId="transport-select-label"
+              sx={{ display: visibleFields.transport ? "block" : "none" }}
+              fullWidth
+              id="transport-select"
+              value={transport}
+              label="Pasirinkite Transporto Priemonę"
+              onChange={(event) => setTransport(event.target.value)}
+            >
+              {Object.values(TRANSPORT_TYPES).map((item) => (
+                <MenuItem key={item} value={item}>
+                  {item}
+                </MenuItem>
+              ))}
             </Select>
             <TextField
               margin="normal"
-              sx={{display: visibleFields.address ? "block" : "none"}}
+              sx={{ display: visibleFields.address ? "block" : "none" }}
               required
               fullWidth
               name="address"
               label="Adresas"
               id="address"
               autoComplete="off"
-              onChange={event => setAddress(event.target.value)}
+              onChange={(event) => setAddress(event.target.value)}
               value={address}
             />
             <TextField
               margin="normal"
-              sx={{display: visibleFields.openingTime ? "block" : "none"}}
+              sx={{ display: visibleFields.openingTime ? "block" : "none" }}
               required
               fullWidth
               type="time"
@@ -467,11 +624,11 @@ export default function Register() {
               label="Dirbama nuo"
               id="openingTime"
               autoComplete="off"
-              onChange={event => setOpeningTime(event.target.value)}
+              onChange={(event) => setOpeningTime(event.target.value)}
               value={openingTime}
             />
             <TextField
-            sx={{display: visibleFields.closingTime ? "block" : "none"}}
+              sx={{ display: visibleFields.closingTime ? "block" : "none" }}
               margin="normal"
               required
               fullWidth
@@ -480,12 +637,12 @@ export default function Register() {
               label="Dirbama iki"
               id="closingTime"
               autoComplete="off"
-              onChange={event => setClosingTime(event.target.value)}
+              onChange={(event) => setClosingTime(event.target.value)}
               value={closingTime}
             />
             <TextField
               margin="normal"
-              sx={{display: visibleFields.password ? "block" : "none"}}
+              sx={{ display: visibleFields.password ? "block" : "none" }}
               required
               fullWidth
               name="password"
@@ -493,7 +650,7 @@ export default function Register() {
               type="password"
               id="password"
               autoComplete="off"
-              onChange={event => setPassword(event.target.value)}
+              onChange={(event) => setPassword(event.target.value)}
               value={password}
             />
             {snackOpen && (

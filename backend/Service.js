@@ -106,8 +106,8 @@ app.post('/register/restaurant', express.json({type: '*/*'}), async (request, re
 
 app.post('/register/admin', express.json({type: '*/*'}), async (request, response) => {  
 	try{
-		let firstname = request.body.firstname;
-		let lastname = request.body.lastname;
+		let firstname = request.body.firstName;
+		let lastname = request.body.lastName;
 		let email = request.body.email;
 		let phoneNumber = request.body.phoneNumber;
 		let username = request.body.username;
@@ -134,9 +134,10 @@ app.post('/login', express.json({type: '*/*'}), async (request, response) => {
 		)).TABLENAME;
 
 		const isAdmin = role === ROLES.ADMINISTRATOR.ROLENAME; 
+		const isCourier = role === ROLES.COURIER.ROLENAME; 
 		let sql = `SELECT COUNT(id) AS found, id` + 
 			(isAdmin ? `` : `, fk_city_id`) +
-			`, username, email, password FROM ${tableName} WHERE email = ? OR username = ? GROUP BY id`;
+			`, username, email, password FROM ${tableName} WHERE email = ? OR username = ?`;
 		let result = await db.executeSqlQuery(sql, [emailOrUsername, emailOrUsername]);
 
 		// check if user exists
@@ -156,6 +157,11 @@ app.post('/login', express.json({type: '*/*'}), async (request, response) => {
 				if (!isAdmin) 
 					responseData["cityId"] = result[0].fk_city_id;
 
+				if (isCourier) {
+					responseData["approved"] = result[0].approved;
+					responseData["status"] = COURIER_STATES.ONLINE;	
+				}
+					
 				response.status(200).send(responseData);	
 			} else {
 				response.status(401).send({success: false, message: "Neteisingas slaptažodis"});
@@ -176,7 +182,7 @@ app.get('/courier/:id/data', async (request, response) => {
 		let id = request.params.id;
     let sql = `SELECT cr.firstname, cr.lastname,
 			cr.birth_date, cr.employed_from,
-			cr.phone_number, cr.transport,
+			cr.phone_number, cr.transport, cr.email,
 			cr.approved, cr.status,
 			c.name AS city, c.county
 			FROM couriers AS cr INNER JOIN cities AS c 
@@ -194,7 +200,7 @@ app.get('/courier/:id/data', async (request, response) => {
 app.get('/restaurant/:id/data', async (request, response) => {
 	try{
 		let id = request.params.id;
-    let sql = 'SELECT name, address, opening_time, closing_time FROM restaurants WHERE id = ?';
+    let sql = 'SELECT name, address, opening_time, closing_time, email FROM restaurants WHERE id = ?';
     let result = await db.executeSqlQuery(sql, [id]);
     
     response.status(200).send(JSON.stringify({profileData: result[0], success: true}));
@@ -324,18 +330,17 @@ app.get('/orders/:cityId', async (request, response) => {
 			crt.id AS cartId, crt.sum AS totalCartPrice,
 			crtm.amount AS currentMealAmount,
 			m.name AS mealName,
-			r.name AS restaurantName, r.address AS restaurantAddress,
-			d.tariff_size AS deliveryTax
+			r.name AS restaurantName, r.address AS restaurantAddress
 		FROM orders AS o
-		INNER JOIN clients AS c ON c.fk_city_id = ?
+		INNER JOIN clients AS c ON c.id = o.fk_client_id
 		INNER JOIN carts AS crt ON crt.fk_order_id = o.id
 		INNER JOIN cart_meals AS crtm ON crtm.fk_cart_id = crt.id
 		INNER JOIN meals AS m ON crtm.fk_meal_id = m.id
-		INNER JOIN restaurants AS r ON r.id = m.fk_restaurant_id 
-		INNER JOIN delivery_tariffs AS d on d.id = o.fk_delivery_tariff_id
+		INNER JOIN restaurants AS r ON r.id = m.fk_restaurant_id
 		WHERE 
-			(o.status = "Apmokėtas" OR o.status = "Patvirtintas restorano" OR o.status = "Pagamintas")
-			AND o.fk_courier_id IS NOT NULL
+			(o.status = "Užsakytas kliento" OR o.status = "Patvirtintas restorano" OR o.status = "Pagamintas")
+			AND o.fk_courier_id IS NULL
+			AND c.fk_city_id = ?
 		`;
     let result = await db.executeSqlQuery(sql, [cityId]);
 		response.status(200).send({success: true, orders: result});
@@ -345,6 +350,161 @@ app.get('/orders/:cityId', async (request, response) => {
 		response.status(400).send({message: e.sqlMessage, success: false});
 	}
 })
+
+app.put('/orders/:orderId/status', async (request, response) => {  
+	try{
+		let id = request.params.orderId;
+		let newStatus = request.body.newStatus;
+		let sql = 'UPDATE orders SET status = ? WHERE id = ?';
+		let result = await db.executeSqlQuery(sql, [newStatus, id]);
+    response.status(200).send({message: "Užsakymas atnaujintas sėkmingai!", success: true});	
+	}	
+	catch(e) {
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.put('/orders/:orderId/assign-courier', async (request, response) => {  
+	try{
+		let orderId = request.params.orderId;
+		let courierId = request.body.courierId;
+
+		let sqlDelivery = `SELECT id FROM delivery_tariffs  
+		WHERE fk_courier_id = ? AND NOW() >= applied_from AND NOW() <= applied_until`;
+		let resultDelivery = await db.executeSqlQuery(sqlDelivery, [courierId]);
+
+		let sql = 'UPDATE orders SET fk_courier_id = ?, fk_delivery_tariff_id = ? WHERE id = ?';
+		let result = await db.executeSqlQuery(sql, [courierId, resultDelivery[0].id, orderId]);
+		let sqlStatus = 'UPDATE couriers set status = ? WHERE id = ?';
+		let resultStatus = await db.executeSqlQuery(sqlStatus, [COURIER_STATES.BUSY, courierId]);
+    response.status(200).send({message: "Kurjeris priskirtas sėkmingai!", success: true});	
+	}	
+	catch(e) {
+		console.log(e)
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.get('/orders/:orderId/get-one', async (request, response) => {
+	try{
+		let orderId = request.params.orderId;
+    let sql = 
+		`SELECT * from orders WHERE id = ?`;
+    let result = await db.executeSqlQuery(sql, [orderId]);
+		response.status(200).send({success: true, order: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.put('/orders/:orderId/cancel-courier', async (request, response) => {  
+	try{
+		let orderId = request.params.orderId;
+		let courierId = request.body.courierId;
+		let sql = 'UPDATE orders SET fk_courier_id = null WHERE id = ?';
+		let result = await db.executeSqlQuery(sql, [orderId]);
+		let sqlStatus = 'UPDATE couriers set status = ? WHERE id = ?';
+		let resultStatus = await db.executeSqlQuery(sqlStatus, [COURIER_STATES.WAITING_FOR_ORDER, courierId]);
+    response.status(200).send({success: true});	
+	}	
+	catch(e) {
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.get('/unaprovedRestaurants/', async (request, response) => {
+	try{
+    	let sql = `SELECT id, name, opening_time, closing_time, email FROM restaurants WHERE approved = 0`;
+    	let result = await db.executeSqlQuery(sql, []);
+    
+    	response.status(200).send({success: true, restaurants: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.put('/unaprovedRestaurants/:id', async (request, response) => {
+	try{
+		let tax = request.body.rate;
+		let adminId = request.body.adminId;
+		let restaurantId = request.params.id;
+    	let sql = `INSERT INTO taxes (applied_from, applied_until, tax_size, fk_admin_id) VALUES (NOW(), DATE_ADD(NOW(), INTERVAL 365 DAY), ?, ?)`;
+    	let result = await db.executeSqlQuery(sql, [tax, adminId]);
+
+		let sql2 = `UPDATE restaurants SET fk_tax_id = ?, approved = ? WHERE id = ?`;
+		let result2 = await db.executeSqlQuery(sql2, [result.insertId, 1, restaurantId]);
+		
+    	response.status(200).send({success: true});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.get('/orders/by-courier/:courierId', async (request, response) => {
+	try{
+		let courierId = request.params.courierId;
+    let sql = 
+		`
+		SELECT o.number, o.date, o.delivery_address, r.name AS restaurantName, c.sum AS orderPrice, d.tariff_size AS earnings
+		FROM orders AS o
+		INNER JOIN carts AS c ON c.fk_order_id = o.id
+		INNER JOIN delivery_tariffs AS d ON d.id = o.fk_delivery_tariff_id
+		JOIN (
+			SELECT id, fk_cart_id, fk_meal_id FROM cart_meals WHERE id IN (
+				SELECT MAX(id) FROM cart_meals GROUP BY fk_cart_id
+			)
+		) AS cm ON cm.fk_cart_id = c.id
+		INNER JOIN meals AS m ON m.id = cm.fk_meal_id
+		INNER JOIN restaurants AS r ON r.id = m.fk_restaurant_id 
+		WHERE o.fk_courier_id = ? AND o.status = "Užbaigtas";
+		`;
+    let result = await db.executeSqlQuery(sql, [courierId]);
+		response.status(200).send({success: true, orders: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.get('/unaprovedCouriers/', async (request, response) => {
+	try{
+    	let sql = `SELECT id, firstname, lastname, birth_date, phone_number, email, transport FROM couriers WHERE approved = 0`;
+    	let result = await db.executeSqlQuery(sql, []);
+    
+    	response.status(200).send({success: true, couriers: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.put('/unaprovedCouriers/:id', async (request, response) => {
+	try{
+		let tax = request.body.rate;
+		let adminId = request.body.adminId;
+		let courierId = request.params.id;
+    	let sql = `INSERT INTO delivery_tariffs (applied_from, applied_until, tariff_size, fk_courier_id, fk_admin_id) VALUES (NOW(), DATE_ADD(NOW(), INTERVAL 365 DAY), ?, ?, ?)`;
+    	let result = await db.executeSqlQuery(sql, [tax, courierId, adminId]);
+
+		let sql2 = `UPDATE couriers SET approved = ?, employed_from = NOW() WHERE id = ?`;
+		let result2 = await db.executeSqlQuery(sql2, [1, courierId]);
+
+    	response.status(200).send({success: true});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
 
 app.put('/meals/:restaurantId/createmeal', async (request, response) => {
 	try{

@@ -7,12 +7,13 @@ import OrderOfferDialog from "./OrderOfferDialog";
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { ShoppingCartContext } from "../Contexts/ShoppingCartContext";
 import { useNavigate } from "react-router-dom";
+import { CourierContext } from "../Contexts/CourierContext";
 
 
 export default function MainPageContainer({children}) {
 
   const { userData } = useContext(UserContext);
-  const [offerOpen, setOfferOpen] = useState(false);
+  const { isDelivering } = useContext(CourierContext);
   const [orderOpen, setOrderOpen] = useState(false);
   const { cartItems } = useContext(ShoppingCartContext);
   const navigate = useNavigate();
@@ -31,32 +32,20 @@ export default function MainPageContainer({children}) {
         </div>
       }
       {
-        userData.role === ROLES.COURIER && (
+        userData.role === ROLES.COURIER && isDelivering && (
           <>
           <div style={{position: "fixed", bottom: 0, right: 0}}>
             <Button
               size="small"
               variant="contained"
-              onClick={() => setOfferOpen(true)}
-            >
-              Užsakymo pasiūlymo pavyzdys
-            </Button>
-            <Button
-              size="small"
-              variant="contained"
               onClick={() => setOrderOpen(true)}
             >
-              Užsakymo pavyzdys
+              MANO PRISTATYMAS
             </Button>
           </div>
-            <OrderOfferDialog
-              open={offerOpen}
-              setOpen={setOfferOpen}  
-            >
-            </OrderOfferDialog>
             <CourierOrderDialog
               open={orderOpen}
-              setOpen={setOrderOpen}  
+              setOpen={setOrderOpen} 
             >
             </CourierOrderDialog>
           </>

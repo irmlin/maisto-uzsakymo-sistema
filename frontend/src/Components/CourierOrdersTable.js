@@ -1,10 +1,14 @@
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import { useContext } from "react";
+import { CourierContext } from "../Contexts/CourierContext";
 
-export default function CourierOrdersTable({orders}) {
+export default function CourierOrdersTable({orders, handleSelectOrder}) {
 
   const tableHeaders = [
     "Klientas", "Pristatymo adresas", "Restoranas", "Restorano adresas", "Užsakymo statusas"
   ];
+
+  const { isDelivering } = useContext(CourierContext);
 
   const genericOrderData = orders.reduce((result, element) => {
     if (!result.length) {
@@ -26,6 +30,11 @@ export default function CourierOrdersTable({orders}) {
       order.restaurantAddress,
       order.orderStatus
     ]
+  }
+
+  function getSelectedOrderInfoForCourier(index) {
+    const orderId = genericOrderData[index].orderId;
+    return orders.filter(o => o.orderId === orderId);
   }
 
   return (
@@ -51,6 +60,16 @@ export default function CourierOrdersTable({orders}) {
                     </TableCell>
                   ))
                 }
+                <TableCell>
+                  <Button
+                    onClick={(e) => handleSelectOrder(e, getSelectedOrderInfoForCourier(i))} 
+                    variant={"contained"} 
+                    size={"small"}
+                    disabled={isDelivering}  
+                  >
+                    ATLIKTI UŽSAKYMĄ
+                  </Button>
+                </TableCell>
               </TableRow>
             )
           )}

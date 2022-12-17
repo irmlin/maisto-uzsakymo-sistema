@@ -49,7 +49,9 @@ export default function Login() {
           email: response.data.email,
           role: response.data.role,
           username: response.data.username,
-          cityId: response.data.cityId
+          cityId: response.data.cityId,
+          approved: response.data.approved,
+          status: response.data.status
         };
         setUserData(newUserData);
         setIsAuthenticated(true);

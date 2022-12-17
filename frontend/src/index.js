@@ -30,18 +30,20 @@ import Logout from './Components/Logout';
 import { ShoppingCartContextProvider } from './Contexts/ShoppingCartContext';
 import Cart from './Pages/Cart';
 import CourierOrders from './Pages/CourierOrders';
+import { CourierContextProvider } from './Contexts/CourierContext';
 
 ReactDOM.render(
   <React.StrictMode>
     <UserContextProvider>
       <ShoppingCartContextProvider>
-        <Router>
-          <MainPageContainer>
-          <Routes>
+        <CourierContextProvider>
+          <Router>
+            <MainPageContainer>
+            <Routes>
 
-            {/* These paths are accessible to anyone */}
-            <Route path="/login" element={<Login/>}/>
-            <Route path="/register" element={<Register/>}/>
+              {/* These paths are accessible to anyone */}
+              <Route path="/login" element={<Login/>}/>
+              <Route path="/register" element={<Register/>}/>
 
             {/* These are all the protected routes. A user that is not logged in will be redirected to /login when trying to access them. */}
             <Route element={<ProtectedRoute/>}>
@@ -68,12 +70,13 @@ ReactDOM.render(
               <Route path="/logout" element={<Logout/>}/>
             </Route>
 
-            {/* For invalid paths, redirect to /login */}
-            <Route path="/*" element={<Login/>} />
-            
-          </Routes>
-          </MainPageContainer>
-        </Router>
+              {/* For invalid paths, redirect to /login */}
+              <Route path="/*" element={<Login/>} />
+              
+            </Routes>
+            </MainPageContainer>
+          </Router>
+        </CourierContextProvider>
       </ShoppingCartContextProvider>
     </UserContextProvider>
     <Global

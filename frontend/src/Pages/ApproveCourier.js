@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SimplePageContent from "../Components/SimplePageContent";
 import { TextField } from "@mui/material";
 import NewCourierData from "../TempData/NewCourierData";
@@ -11,6 +11,8 @@ import GridPageContent from "../Components/GridPageContent";
 import { motion } from "framer-motion";
 import StyledButton from "../Components/StyledButton";
 import { useNavigate } from "react-router-dom";
+import { getUserData } from "../Services/UserService";
+import { approveCourier } from "../Services/AdminService";
 
 export default function ApproveCourier() {
 
@@ -18,7 +20,30 @@ export default function ApproveCourier() {
   const { userData } = useContext(UserContext);
   const [rate, setRate] = useState("");
   const { courierId } = useParams();
-  const courier = NewCourierData.find(r => r.courierNumber === Number(courierId));
+  const [ courierData, setCourierData ] = useState();
+
+  const fetchCourierData = async () => {
+    const response = await getUserData(ROLES.COURIER, courierId);
+    if (response) {
+      if (response.data.success) {
+        setCourierData(response.data.profileData);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchCourierData();
+  }, []);
+
+  const handleApprove = async () => {
+    const response = await approveCourier(
+      courierId,
+      rate,
+      userData.id
+    );
+    navigate(`/newCouriers`);
+  };
+
 
   return (
     <>
@@ -30,25 +55,25 @@ export default function ApproveCourier() {
       
     <SimplePageContent>
                 {
-                    userData.role === ROLES.ADMINISTRATOR && (
+                    userData.role === ROLES.ADMINISTRATOR && courierData && (
                         <>
                             <div style={{padding: '10px'}}>
-                                <b>Kurjerio vardas: </b>{courier.courierName}
+                                <b>Kurjerio vardas: </b>{courierData.firstname}
                             </div>
                             <div style={{padding: '10px'}}>
-                                <b>Kurjerio pavardė: </b>{courier.courierSurname}
+                                <b>Kurjerio pavardė: </b>{courierData.lastname}
                             </div>
                             <div style={{padding: '10px'}}>
-                                <b>Kurjerio gimimo data: </b>{courier.courierBirthDate.toLocaleString(navigator.language, {year: 'numeric', month:'numeric', day: 'numeric'})}
+                                <b>Kurjerio gimimo data: </b>{courierData.birth_date.split("T")[0]}
                             </div>
                             <div style={{padding: '10px'}}>
-                                <b>Kurjerio telefono nr.: </b>{courier.courierPhone}
+                                <b>Kurjerio telefono nr.: </b>{courierData.phone_number}
                             </div>
                             <div style={{padding: '10px'}}>
-                                <b>Kurjerio e. paštas: </b>{courier.courierEmail}
+                                <b>Kurjerio e. paštas: </b>{courierData.email}
                             </div>
                             <div style={{padding: '10px'}}>
-                                <b>Kurjerio transporto priemonė: </b>{courier.courierTransport}
+                                <b>Kurjerio transporto priemonė: </b>{courierData.transport}
                             </div>
                             <div style={{padding: '10px'}}>
                                 <b>Kurjerio tarifas: </b>
@@ -67,7 +92,7 @@ export default function ApproveCourier() {
                             <div style={{display:'flex', flexDirection:'row', flexWrap: 'wrap', padding: '15px',}}>
                             
                             <StyledButton style={{flex: 1}}
-                              onClick={() => navigate(`/newCouriers`)}
+                              onClick={() => handleApprove()}
                             >
                                 Išsaugoti
                             </StyledButton>

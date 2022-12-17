@@ -10,7 +10,9 @@ export const registerNewUser = async (role, data) => {
             endpoint = "/register/client";
         else if (role === ROLES.RESTAURANT)
             endpoint = "/register/restaurant";
-
+        else
+            endpoint = "/register/admin";
+        console.log(role, data)
         return await axiosInstance.post(endpoint, data);
     } catch (err) {
         console.error("Could not register new user ", err.response);
