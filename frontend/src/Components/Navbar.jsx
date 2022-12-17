@@ -4,11 +4,12 @@ import { css, jsx } from "@emotion/react";
 import Buttons from "./Buttons";
 import { UserContext } from "../Contexts/UserContext";
 import { useContext } from "react";
+import { ROLES } from "../Enums/Enums";
 
 export default function Navbar() {
   const breakpoints = [576, 768, 992, 1200];
   const mq = breakpoints.map((bp) => `@media (max-width: ${bp}px)`);
-  const { isAuthenticated } = useContext(UserContext);
+  const { isAuthenticated, userData } = useContext(UserContext);
   
   return (
     <div
@@ -58,7 +59,14 @@ export default function Navbar() {
       <div style={{width: "10%"}}>
         {
           isAuthenticated ? (
-            <a href={"/logout"}><h3 className="dwu">Atsijungti</h3></a>
+            <div>
+              <a href={"/logout"}><h3 className="dwu">Atsijungti</h3></a>
+              {
+                userData.role === ROLES.ADMINISTRATOR && (
+                  <a href={"/register"}><h3 className="dwu">Registracija</h3></a>
+                )
+              }
+            </div>
           ) : (
             <div>
               <a href={"/login"}><h3 className="dwu">Prisijungti</h3></a>

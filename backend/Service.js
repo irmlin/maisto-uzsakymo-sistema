@@ -106,8 +106,8 @@ app.post('/register/restaurant', express.json({type: '*/*'}), async (request, re
 
 app.post('/register/admin', express.json({type: '*/*'}), async (request, response) => {  
 	try{
-		let firstname = request.body.firstname;
-		let lastname = request.body.lastname;
+		let firstname = request.body.firstName;
+		let lastname = request.body.lastName;
 		let email = request.body.email;
 		let phoneNumber = request.body.phoneNumber;
 		let username = request.body.username;
