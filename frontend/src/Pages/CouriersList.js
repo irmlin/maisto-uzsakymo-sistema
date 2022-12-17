@@ -1,17 +1,42 @@
 import Navbar from "../Components/Navbar";
 import SimplePageContent from "../Components/SimplePageContent";
 import { UserContext } from "../Contexts/UserContext";
-import { useContext} from "react";
+import { useContext, useState, useEffect} from "react";
 import { ROLES } from "../Enums/Enums";
 import { Table, TableHead, TableRow, TableCell, TableBody } from "@mui/material";
-import CourierData from "../TempData/CourierData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { getCouriers, deleteCouriers } from "../Services/AdminService";
 
-export default function NewCouriers() {
+export default function Couriers() {
     
     const navigate = useNavigate();
     const { userData } = useContext(UserContext);
+    const [changed, setChanged] = useState(false);
+
+    const [courierData, setCourierData] = useState([]);
+
+    const fetchCourierData = async () => {
+      const response = await getCouriers();
+
+      
+      
+      if (response) {
+        if (response.data.success) {
+          setCourierData(response.data.couriers);
+        }
+      }
+      console.log(courierData);
+    };
+  
+    useEffect(() => {
+      fetchCourierData();
+    }, [changed]);
+
+    const handleDelete = async (id) => {
+      await deleteCouriers(id);
+      setChanged(!changed);
+    }
 
     return (
         <div>
@@ -21,7 +46,7 @@ export default function NewCouriers() {
                 Kurjeriai
               </motion.h2>
                 {
-                    userData.role === ROLES.ADMINISTRATOR && (
+                   userData.role === ROLES.ADMINISTRATOR && (
                         <>
                           <Table>
                             <TableHead>
@@ -60,38 +85,38 @@ export default function NewCouriers() {
                             </TableHead>
                             <TableBody>
                               {
-                                CourierData.map(courier => (
-                                  <TableRow key={courier.courierNumber}>
+                                courierData.map(courier => (
+                                  <TableRow key={courier.id}>
                                     <TableCell>
-                                      {courier.courierName}
+                                      {courier.firstname}
                                     </TableCell>
                                     <TableCell>
-                                      {courier.courierSurname}
+                                      {courier.lastname}
                                     </TableCell>
                                     <TableCell>
-                                        {courier.courierBirthDate.toLocaleString(navigator.language, {year: 'numeric', month:'numeric', day: 'numeric'})}
+                                        {courier.birth_date.split("T")[0]}
                                     </TableCell>
                                     <TableCell>
-                                        {courier.courierWorkStart.toLocaleString(navigator.language, {year: 'numeric', month:'numeric', day: 'numeric'})}
+                                        {courier.employed_from.split("T")[0]}
                                     </TableCell>
                                     <TableCell>
-                                        {courier.courierPhone}
+                                        {courier.phone_number}
                                     </TableCell>
                                     <TableCell>
-                                        {courier.courierEmail}
+                                        {courier.email}
                                     </TableCell>
                                     <TableCell>
-                                        {courier.courierTransport}
+                                        {courier.transport}
                                     </TableCell>
                                     <TableCell>
-                                        {courier.courierStatus}
+                                        {courier.status}
                                     </TableCell>
                                     <TableCell>
-                                        {courier.courierRate}
+                                        {courier.tariff_size}
                                     </TableCell>
                                     <TableCell>
-                                        <button>Pašalinti</button>
-                                        <button onClick={() => navigate(`/EditCourier/${courier.courierNumber}`)}>Redaguoti</button>
+                                        <button  onClick={() => handleDelete(courier.id)}>Pašalinti</button>
+                                        <button onClick={() => navigate(`/EditCourier/${courier.id}`)}>Redaguoti</button>
                                     </TableCell>
                                   </TableRow>
                                 ))
