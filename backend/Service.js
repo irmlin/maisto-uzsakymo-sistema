@@ -176,7 +176,7 @@ app.get('/courier/:id/data', async (request, response) => {
 		let id = request.params.id;
     let sql = `SELECT cr.firstname, cr.lastname,
 			cr.birth_date, cr.employed_from,
-			cr.phone_number, cr.transport,
+			cr.phone_number, cr.transport, cr.email,
 			cr.approved, cr.status,
 			c.name AS city, c.county
 			FROM couriers AS cr INNER JOIN cities AS c 
@@ -194,7 +194,7 @@ app.get('/courier/:id/data', async (request, response) => {
 app.get('/restaurant/:id/data', async (request, response) => {
 	try{
 		let id = request.params.id;
-    let sql = 'SELECT name, address, opening_time, closing_time FROM restaurants WHERE id = ?';
+    let sql = 'SELECT name, address, opening_time, closing_time, email FROM restaurants WHERE id = ?';
     let result = await db.executeSqlQuery(sql, [id]);
     
     response.status(200).send(JSON.stringify({profileData: result[0], success: true}));
@@ -380,6 +380,70 @@ app.get('/orders/:orderId/get-one', async (request, response) => {
 		`SELECT * from orders WHERE id = ?`;
     let result = await db.executeSqlQuery(sql, [orderId]);
 		response.status(200).send({success: true, order: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.get('/unaprovedRestaurants/', async (request, response) => {
+	try{
+    	let sql = `SELECT id, name, opening_time, closing_time, email FROM restaurants WHERE approved = 0`;
+    	let result = await db.executeSqlQuery(sql, []);
+    
+    	response.status(200).send({success: true, restaurants: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.put('/unaprovedRestaurants/:id', async (request, response) => {
+	try{
+		let tax = request.body.rate;
+		let adminId = request.body.adminId;
+		let restaurantId = request.params.id;
+    	let sql = `INSERT INTO taxes (applied_from, applied_until, tax_size, fk_admin_id) VALUES (NOW(), DATE_ADD(NOW(), INTERVAL 365 DAY), ?, ?)`;
+    	let result = await db.executeSqlQuery(sql, [tax, adminId]);
+
+		let sql2 = `UPDATE restaurants SET fk_tax_id = ?, approved = ? WHERE id = ?`;
+		let result2 = await db.executeSqlQuery(sql2, [result.insertId, 1, restaurantId]);
+		
+    	response.status(200).send({success: true});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.get('/unaprovedCouriers/', async (request, response) => {
+	try{
+    	let sql = `SELECT id, firstname, lastname, birth_date, phone_number, email, transport FROM couriers WHERE approved = 0`;
+    	let result = await db.executeSqlQuery(sql, []);
+    
+    	response.status(200).send({success: true, couriers: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.put('/unaprovedCouriers/:id', async (request, response) => {
+	try{
+		let tax = request.body.rate;
+		let adminId = request.body.adminId;
+		let courierId = request.params.id;
+    	let sql = `INSERT INTO delivery_tariffs (applied_from, applied_until, tariff_size, fk_courier_id, fk_admin_id) VALUES (NOW(), DATE_ADD(NOW(), INTERVAL 365 DAY), ?, ?, ?)`;
+    	let result = await db.executeSqlQuery(sql, [tax, courierId, adminId]);
+
+		let sql2 = `UPDATE couriers SET approved = ? WHERE id = ?`;
+		let result2 = await db.executeSqlQuery(sql2, [1, courierId]);
+
+    	response.status(200).send({success: true});
 	}
 	catch (e) {
 		console.log(e);

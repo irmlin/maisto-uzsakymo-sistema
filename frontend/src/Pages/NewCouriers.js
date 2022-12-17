@@ -1,7 +1,7 @@
 import Navbar from "../Components/Navbar";
 import SimplePageContent from "../Components/SimplePageContent";
 import { UserContext } from "../Contexts/UserContext";
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 import { ROLES } from "../Enums/Enums";
 import {
   Table,
@@ -10,13 +10,29 @@ import {
   TableCell,
   TableBody,
 } from "@mui/material";
-import NewCourierData from "../TempData/NewCourierData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import {getunaprovedCouriers} from "../Services/AdminService"
 
 export default function NewCouriers() {
   const navigate = useNavigate();
   const { userData } = useContext(UserContext);
+
+  const [courierData, setCourierData] = useState([]);
+
+  const fetchCourierData = async () => {
+    const response = await getunaprovedCouriers();
+    
+    if (response) {
+      if (response.data.success) {
+        setCourierData(response.data.couriers);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchCourierData();
+  }, []);
 
   return (
     <div>
@@ -38,23 +54,20 @@ export default function NewCouriers() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {NewCourierData.map((courier) => (
-                  <TableRow key={courier.courierNumber}>
-                    <TableCell>{courier.courierName}</TableCell>
-                    <TableCell>{courier.courierSurname}</TableCell>
+                {courierData.map((courier) => (
+                  <TableRow key={courier.id}>
+                    <TableCell>{courier.firstname}</TableCell>
+                    <TableCell>{courier.lastname}</TableCell>
                     <TableCell>
-                      {courier.courierBirthDate.toLocaleString(
-                        navigator.language,
-                        { year: "numeric", month: "numeric", day: "numeric" }
-                      )}
+                      {courier.birth_date.split("T")[0]}
                     </TableCell>
-                    <TableCell>{courier.courierPhone}</TableCell>
-                    <TableCell>{courier.courierEmail}</TableCell>
-                    <TableCell>{courier.courierTransport}</TableCell>
+                    <TableCell>{courier.phone_number}</TableCell>
+                    <TableCell>{courier.email}</TableCell>
+                    <TableCell>{courier.transport}</TableCell>
                     <TableCell>
                       <button
                         onClick={() =>
-                          navigate(`/ApproveCourier/${courier.courierNumber}`)
+                          navigate(`/ApproveCourier/${courier.id}`)
                         }
                       >
                         Patvirtinti

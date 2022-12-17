@@ -1,17 +1,34 @@
 import Navbar from "../Components/Navbar";
 import SimplePageContent from "../Components/SimplePageContent";
 import { UserContext } from "../Contexts/UserContext";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ROLES } from "../Enums/Enums";
 import { Table, TableHead, TableRow, TableCell, TableBody } from "@mui/material";
-import NewSupplierData from "../TempData/NewSupplierData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { getunaprovedRestaurants } from "../Services/AdminService";
 
 export default function NewSuppliers() {
     
     const { userData } = useContext(UserContext);
     const navigate  = useNavigate();
+    const [supplierData, setSupplierData] = useState([]);
+
+    const fetchRestaurantData = async () => {
+      const response = await getunaprovedRestaurants();
+      
+      if (response) {
+        if (response.data.success) {
+          setSupplierData(response.data.restaurants);
+          console.log(supplierData);
+        }
+      }
+    };
+
+    useEffect(() => {
+
+      fetchRestaurantData();
+    }, []);
 
     return (
         <div>
@@ -43,23 +60,23 @@ export default function NewSuppliers() {
                               </TableRow>
                             </TableHead>
                             <TableBody>
-                              {
-                                NewSupplierData.map(supplier => (
-                                  <TableRow key={supplier.supplierNumber}>
+                              {supplierData &&
+                                supplierData.map(supplier => (
+                                  <TableRow key={supplier.id}>
                                     <TableCell>
-                                      {supplier.supplierName}
+                                      {supplier.name}
                                     </TableCell>
                                     <TableCell>
-                                        {supplier.supplierOpen.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'})}
+                                        {supplier.opening_time}
                                     </TableCell>
                                     <TableCell>
-                                        {supplier.supplierClose.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'})}
+                                        {supplier.closing_time}
                                     </TableCell>
                                     <TableCell>
-                                        {supplier.supplierEmail}
+                                        {supplier.email}
                                     </TableCell>
                                     <TableCell>
-                                        <button onClick={() => navigate(`/ApproveSupplier/${supplier.supplierNumber}`)}>Patvirtinti</button>
+                                        <button onClick={() => navigate(`/ApproveSupplier/${supplier.id}`)}>Patvirtinti</button>
                                     </TableCell>
                                   </TableRow>
                                 ))
