@@ -134,8 +134,10 @@ app.post('/login', express.json({type: '*/*'}), async (request, response) => {
 		)).TABLENAME;
 
 		const isAdmin = role === ROLES.ADMINISTRATOR.ROLENAME; 
+		const isCourier = role === ROLES.COURIER.ROLENAME; 
 		let sql = `SELECT COUNT(id) AS found, id` + 
 			(isAdmin ? `` : `, fk_city_id`) +
+			(isCourier ? `, approved` : ``) +
 			`, username, email, password FROM ${tableName} WHERE email = ? OR username = ?`;
 		let result = await db.executeSqlQuery(sql, [emailOrUsername, emailOrUsername]);
 
@@ -156,6 +158,11 @@ app.post('/login', express.json({type: '*/*'}), async (request, response) => {
 				if (!isAdmin) 
 					responseData["cityId"] = result[0].fk_city_id;
 
+				if (isCourier) {
+					responseData["approved"] = result[0].approved;
+					responseData["status"] = COURIER_STATES.ONLINE;	
+				}
+					
 				response.status(200).send(responseData);	
 			} else {
 				response.status(401).send({success: false, message: "Neteisingas slaptažodis"});
@@ -366,6 +373,8 @@ app.put('/orders/:orderId/assign-courier', async (request, response) => {
 		let courierId = request.body.courierId;
 		let sql = 'UPDATE orders SET fk_courier_id = ? WHERE id = ?';
 		let result = await db.executeSqlQuery(sql, [courierId, orderId]);
+		let sqlStatus = 'UPDATE couriers set status = ? WHERE id = ?';
+		let resultStatus = await db.executeSqlQuery(sqlStatus, [COURIER_STATES.BUSY, courierId]);
     response.status(200).send({message: "Kurjeris priskirtas sėkmingai!", success: true});	
 	}	
 	catch(e) {
@@ -380,6 +389,48 @@ app.get('/orders/:orderId/get-one', async (request, response) => {
 		`SELECT * from orders WHERE id = ?`;
     let result = await db.executeSqlQuery(sql, [orderId]);
 		response.status(200).send({success: true, order: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.put('/orders/:orderId/cancel-courier', async (request, response) => {  
+	try{
+		let orderId = request.params.orderId;
+		let courierId = request.body.courierId;
+		let sql = 'UPDATE orders SET fk_courier_id = null WHERE id = ?';
+		let result = await db.executeSqlQuery(sql, [orderId]);
+		let sqlStatus = 'UPDATE couriers set status = ? WHERE id = ?';
+		let resultStatus = await db.executeSqlQuery(sqlStatus, [COURIER_STATES.WAITING_FOR_ORDER, courierId]);
+    response.status(200).send({success: true});	
+	}	
+	catch(e) {
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.get('/orders/by-courier/:courierId', async (request, response) => {
+	try{
+		let courierId = request.params.courierId;
+    let sql = 
+		`
+		SELECT o.number, o.date, o.delivery_address, r.name AS restaurantName, c.sum AS orderPrice, d.tariff_size AS earnings
+		FROM orders AS o
+		INNER JOIN carts AS c ON c.fk_order_id = o.id
+		INNER JOIN delivery_tariffs AS d ON d.id = o.fk_delivery_tariff_id
+		JOIN (
+			SELECT id, fk_cart_id, fk_meal_id FROM cart_meals WHERE id IN (
+				SELECT MAX(id) FROM cart_meals GROUP BY fk_cart_id
+			)
+		) AS cm ON cm.fk_cart_id = c.id
+		INNER JOIN meals AS m ON m.id = cm.fk_meal_id
+		INNER JOIN restaurants AS r ON r.id = m.fk_restaurant_id 
+		WHERE o.fk_courier_id = ? AND o.status = "Užbaigtas";
+		`;
+    let result = await db.executeSqlQuery(sql, [courierId]);
+		response.status(200).send({success: true, orders: result});
 	}
 	catch (e) {
 		console.log(e);

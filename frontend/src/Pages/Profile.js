@@ -29,7 +29,7 @@ import {
 } from "../Services/UserService";
 
 export default function Profile() {
-  const { userData } = useContext(UserContext);
+  const { userData, setUserData } = useContext(UserContext);
   const [profileData, setProfileData] = useState({});
   const [snackOpen, setSnackOpen] = useState(false);
   const [snackText, setSnackText] = useState("");
@@ -80,9 +80,7 @@ export default function Profile() {
     ? false
     : Object.values(COURIER_STATES_FOR_COURIER)
         .map((val) => val.value)
-        .includes(profileData.status)
-    ? true
-    : false;
+        .includes(profileData.status);
 
   useEffect(() => {
     fetchProfileData();
@@ -117,6 +115,10 @@ export default function Profile() {
       if (response.data.success) {
         setSnackText(response.data.message);
         setSnackColor("success");
+        const updatedFullProfile = {...userData};
+        updatedFullProfile.status = profileData.status;
+        setUserData(updatedFullProfile);
+        localStorage.setItem('userData', JSON.stringify(updatedFullProfile));
       } else {
         setSnackText(response.data.message);
         setSnackColor("error");

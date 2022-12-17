@@ -1,14 +1,17 @@
 import { Alert, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, FormGroup, IconButton, MenuItem, Select, Snackbar } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
-import { ORDER_STATES, ORDER_STATES_FOR_COURIER } from "../Enums/Enums";
-import { updateOrderStatus } from "../Services/OrderService";
+import { COURIER_STATES, ORDER_STATES, ORDER_STATES_FOR_COURIER } from "../Enums/Enums";
+import { cancelDelivery, updateOrderStatus } from "../Services/OrderService";
 import { CourierContext } from "../Contexts/CourierContext";
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { getOrderById } from "../Services/OrderService";
+import { UserContext } from "../Contexts/UserContext";
+import { updateCourierStatus } from "../Services/UserService";
 
 export default function CourierOrderDialog({open, setOpen}) {
 
   const { setIsDelivering, orderInfo, setOrderInfo, toggleOrders, setToggleOrders } = useContext(CourierContext);
+  const { userData, setUserData } = useContext(UserContext);
   const emptyOrder = Object.keys(orderInfo).length === 0; 
   const [foodTaken, setFoodTaken] = useState(
     emptyOrder ? false : orderInfo.basicInfo.orderStatus === ORDER_STATES_FOR_COURIER.FOOD_TAKEN
@@ -112,12 +115,16 @@ export default function CourierOrderDialog({open, setOpen}) {
       showError(response ? response.data.message : "Serverio klaida");
       return;
     }
+
+    const courierResponse = await updateCourierStatus(userData.id, COURIER_STATES.WAITING_FOR_ORDER);
+    const updatedProfileData = {...userData};
+    updatedProfileData.status = COURIER_STATES.WAITING_FOR_ORDER;
+    setUserData(updatedProfileData);
+    localStorage.setItem('userData', JSON.stringify(updatedProfileData));
     
     const updatedOrderInfo = {...orderInfo};
     updatedOrderInfo.basicInfo.orderStatus = ORDER_STATES_FOR_COURIER.COMPLETED;
 
-    // setOrderInfo(updatedOrderInfo);
-    // localStorage.setItem('orderInfo', JSON.stringify(updatedOrderInfo));
     setFoodDelivered(true);
     setFoodDeliveredDisabled(true);
 
@@ -149,6 +156,28 @@ export default function CourierOrderDialog({open, setOpen}) {
     setSnackColor("success");
   }
 
+  const handleCancelDelivery = async (e) => {
+    e.preventDefault();
+    const response = await cancelDelivery(orderInfo.basicInfo.orderId, userData.id);
+    if (!response || !response.data.success) {
+      showError(response ? response.data.message : "Serverio klaida");
+      return;
+    }
+
+    const updatedProfileData = {...userData};
+    updatedProfileData.status = COURIER_STATES.WAITING_FOR_ORDER;
+    setUserData(updatedProfileData);
+    localStorage.setItem('userData', JSON.stringify(updatedProfileData));
+
+    setToggleOrders(!toggleOrders);
+    showSuccess("Užsakymas atšaukiamas...");
+
+    setTimeout(() => {
+      handleClose();
+      resetState();
+    }, 4000);
+  }
+
   return (
   <Dialog onClose={handleClose} open={open}>
     <DialogTitle>Jūsų vykdomas užsakymas</DialogTitle>
@@ -175,7 +204,7 @@ export default function CourierOrderDialog({open, setOpen}) {
       </IconButton>
     </DialogActions>
     <DialogActions>
-      <Button color={"error"} onClick={handleClose}>NEBENORIU ATLIKTI PRISTATYMO</Button>
+      <Button color={"error"} onClick={handleCancelDelivery}>NEBENORIU ATLIKTI PRISTATYMO</Button>
       <Button onClick={handleClose}>UŽDARYTI</Button>
     </DialogActions>
     <Snackbar

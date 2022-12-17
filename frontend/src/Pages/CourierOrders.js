@@ -1,6 +1,6 @@
 import Navbar from "../Components/Navbar";
 import SimplePageContent from "../Components/SimplePageContent";
-import { motion } from "framer-motion";
+import { motion, useDeprecatedAnimatedState } from "framer-motion";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../Contexts/UserContext";
 import { Alert, Snackbar } from "@mui/material";
@@ -8,11 +8,12 @@ import { getAvailableOrders } from "../Services/OrderService";
 import CourierOrdersTable from "../Components/CourierOrdersTable";
 import { CourierContext } from "../Contexts/CourierContext";
 import { assignOrderToCourier } from "../Services/OrderService";
+import { COURIER_STATES } from "../Enums/Enums";
 
 
 export default function CourierOrders() {
 
-  const { userData } = useContext(UserContext);
+  const { userData, setUserData } = useContext(UserContext);
   const { setIsDelivering, setOrderInfo, toggleOrders, setToggleOrders, orderInfo } = useContext(CourierContext);
   const [orders, setOrders] = useState([]);
   const [snackOpen, setSnackOpen] = useState(false);
@@ -56,6 +57,11 @@ export default function CourierOrders() {
       return;
     }
 
+    const updatedProfileData = {...userData};
+    updatedProfileData.status = COURIER_STATES.BUSY;
+    setUserData(updatedProfileData);
+    localStorage.setItem('userData', JSON.stringify(updatedProfileData));
+
     const {
       cartId, clientId, client_comments,
       date, deliveryTax, delivery_address, firstname, lastname,
@@ -85,10 +91,18 @@ export default function CourierOrders() {
       <Navbar />
       <SimplePageContent>
         <motion.h2 className="header">Užsakymų sąrašas</motion.h2>
-        <CourierOrdersTable
-          orders={orders}
-          handleSelectOrder={handleSelectOrder}
-        />
+        {
+          userData.approved && userData.status !== COURIER_STATES.ONLINE ? (
+            <CourierOrdersTable
+              orders={orders}
+              handleSelectOrder={handleSelectOrder}
+            />
+          ) : userData.approved && userData.status === COURIER_STATES.ONLINE ? (
+            <div style={{textAlign:"center"}}><b><i>Jei norite gauti užsakymų pasiūlymus, profilyje pakeiskite būseną.</i></b></div>
+          ) : (
+            <div style={{textAlign:"center"}}><b><i>Administratorius dar nepatvirtino jūsų paskyros, todėl atlikti užsakymų negalite.</i></b></div>
+          )
+        }
         <Snackbar
           open={snackOpen}
           autoHideDuration={4000}
