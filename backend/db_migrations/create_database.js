@@ -1,8 +1,6 @@
-import createSqlConnection from "../db.js";
+import * as db from "../db.js";
 
-const con = createSqlConnection();
-con.query("CREATE DATABASE food", function (err, result) {
-  if (err) throw err;
-  console.log("Database created");
-});
-con.end();
+let sql = "CREATE DATABASE food";
+let data = [];
+
+db.executeSqlQuery(sql, data);

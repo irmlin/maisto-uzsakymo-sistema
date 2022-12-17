@@ -137,8 +137,7 @@ app.post('/login', express.json({type: '*/*'}), async (request, response) => {
 		const isCourier = role === ROLES.COURIER.ROLENAME; 
 		let sql = `SELECT COUNT(id) AS found, id` + 
 			(isAdmin ? `` : `, fk_city_id`) +
-			(isCourier ? `, approved` : ``) +
-			`, username, email, password FROM ${tableName} WHERE email = ? OR username = ?`;
+			`, username, email, password FROM ${tableName} WHERE email = ? OR username = ? GROUP BY id`;
 		let result = await db.executeSqlQuery(sql, [emailOrUsername, emailOrUsername]);
 
 		// check if user exists
@@ -550,5 +549,64 @@ app.put('/couriers/:courierId/agreement', async (request, response) => {
 	catch (e) {
 		console.log(e);
 		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+
+app.put('/meals/:restaurantId/createmeal', async (request, response) => {
+	try{
+		let id = request.params.restaurantId;
+    let sql = 'INSERT INTO meals (name, description, price, vegetarian, fk_restaurant_id) VALUES (?, ?, ?, ?, ?)';
+	let data = [request.body.rate.mname, request.body.rate.mdescription, request.body.rate.mprice, request.body.rate.mvegetarian, id];
+    let result = await db.executeSqlQuery(sql, data);
+    
+    response.status(200).send(JSON.stringify({profileData: result[0], success: true}));
+	}
+	catch (e) {
+		console.log(e);
+		response.status(500).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.put('/meals/:mealid/updatemeal', async (request, response) => {
+	try{
+		let id = request.params.mealid;
+    let sql = 'UPDATE meals SET name = ?, description = ?, price = ?, vegetarian = ? WHERE id = ?';
+	let data = [request.body.rate.mname, request.body.rate.mdescription, request.body.rate.mprice, request.body.rate.mvegetarian, id];
+    let result = await db.executeSqlQuery(sql, data);
+    
+    response.status(200).send(JSON.stringify({profileData: result[0], success: true}));
+	}
+	catch (e) {
+		console.log(e);
+		response.status(500).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.get('/meals/:mealid/getmeal', async (request, response) => {
+	try{
+		let id = request.params.mealid;
+    let sql = 'SELECT name, description, price, vegetarian FROM meals WHERE id = ?';
+    let result = await db.executeSqlQuery(sql, [id]);
+    
+    response.status(200).send(JSON.stringify({meal: result[0], success: true}));
+	}
+	catch (e) {
+		console.log(e);
+		response.status(500).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.put('/meals/:mealid/deletemeal', async (request, response) => {
+	try{
+		let id = request.params.mealid;
+    let sql = 'DELETE FROM meals WHERE id = ?';
+    let result = await db.executeSqlQuery(sql, [id]);
+    
+    response.status(200).send(JSON.stringify({profileData: result[0], success: true}));
+	}
+	catch (e) {
+		console.log(e);
+		response.status(500).send({message: e.sqlMessage, success: false});
 	}
 })

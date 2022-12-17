@@ -20,8 +20,11 @@ import {
   TableRow,
   TextField,
 } from "@mui/material";
+// vartotojo data
 import { getUserData } from "../Services/UserService";
+// nzn kam tas bet 
 import { IMMUTABLE_PROFILE_INFO_COURIER } from "../Enums/Enums";
+// kurjeriui
 import {
   updateCourierTransport,
   updateCourierStatus,
@@ -31,12 +34,18 @@ import {
 export default function Profile() {
   const { userData, setUserData } = useContext(UserContext);
   const [profileData, setProfileData] = useState({});
+  // alert error
   const [snackOpen, setSnackOpen] = useState(false);
+  // alert text
   const [snackText, setSnackText] = useState("");
+  // alert colour
   const [snackColor, setSnackColor] = useState("success");
 
+  // imam data profile
   const fetchProfileData = async () => {
+    // gaunam role ir data
     const response = await getUserData(userData.role, userData.id);
+    // jei gaunam
     if (response) {
       if (response.data.success) {
         if (userData.role === ROLES.COURIER) {
