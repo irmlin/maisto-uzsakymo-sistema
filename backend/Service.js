@@ -137,7 +137,7 @@ app.post('/login', express.json({type: '*/*'}), async (request, response) => {
 		const isCourier = role === ROLES.COURIER.ROLENAME; 
 		let sql = `SELECT COUNT(id) AS found, id` + 
 			(isAdmin ? `` : `, fk_city_id`) +
-			`, username, email, password FROM ${tableName} WHERE email = ? OR username = ?`;
+			`, username, email, password FROM ${tableName} WHERE email = ? OR username = ? GROUP BY id`;
 		let result = await db.executeSqlQuery(sql, [emailOrUsername, emailOrUsername]);
 
 		// check if user exists

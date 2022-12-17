@@ -194,27 +194,28 @@ export default function OrderHistory() {
 
         {userData.role === ROLES.RESTAURANT && (
           <>
-            <div>
-              <h3>Filtruoti pagal datą</h3>
-              <div>
-                <b>Nuo:</b>
-                <input type="date" />
-              </div>
-              <div>
-                <b>Iki:</b>
-                <input type="date" />
-              </div>
-              <div>
-                <Button
-                  type="submit"
-                  size="small"
-                  variant="contained"
-                  sx={{ ml: 2 }}
-                >
-                  Teikti
-                </Button>
-              </div>
-            </div>
+            <b>Nuo</b>
+            <TextField
+              type="date"
+              size="small"
+              name="dateFrom"
+              id="dateFrom"
+              sx={{mx: 2}}
+              onChange={(event) => setDateFrom(event.target.value)}
+              InputLabelProps={{ shrink: true }}
+              value={dateFrom}
+            />
+            <b>Iki</b>
+            <TextField
+              type="date"
+              size="small"
+              name="dateTo"
+              id="dateTo"
+              sx={{ml: 2}}
+              onChange={(event) => setDateTo(event.target.value)}
+              InputLabelProps={{ shrink: true }}
+              value={dateTo}
+            />
 
             <Table>
               <TableHead>
