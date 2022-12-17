@@ -52,7 +52,7 @@ ReactDOM.render(
               <Route path="/order_history" element={<OrderHistory/>} />
               <Route path="/dishes" element={<Dishes/>}/>
               <Route path="/dish" element={<Dish/>}/>
-              <Route path="/dishedit" element={<DishEdit/>}/>
+              <Route path="/dishedit/:mealid" element={<DishEdit/>}/>
               <Route path="/newCouriers" element={<NewCourierData/>}/>
               <Route path="/newSuppliers" element={<NewSupplierData/>}/>
               <Route path="/ApproveCourier/:courierId" element={<ApproveCourier/>}/>

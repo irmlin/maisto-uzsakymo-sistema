@@ -167,10 +167,4 @@ CREATE TABLE cart_meals
 );
 `;
 
-const con = await db.createDatabaseConnection();
-
-con.query(query, [], function (err, result) {
-  if (err) throw err;
-  console.log("Query executed successfully");
-});
-con.end();
+db.executeSqlQuery(query, []);
