@@ -200,7 +200,7 @@ app.get('/courier/:id/data', async (request, response) => {
 app.get('/restaurant/:id/data', async (request, response) => {
 	try{
 		let id = request.params.id;
-    let sql = 'SELECT name, address, opening_time, closing_time, email FROM restaurants WHERE id = ?';
+    let sql = 'SELECT r.name, r.address, r.opening_time, r.closing_time, r.email, t.tax_size FROM restaurants as r LEFT JOIN taxes as t ON r.fk_tax_id = t.id WHERE r.id = ?';
     let result = await db.executeSqlQuery(sql, [id]);
     
     response.status(200).send(JSON.stringify({profileData: result[0], success: true}));
@@ -608,5 +608,60 @@ app.put('/meals/:mealid/deletemeal', async (request, response) => {
 	catch (e) {
 		console.log(e);
 		response.status(500).send({message: e.sqlMessage, success: false});
+	}
+})
+
+
+app.get('/restaurants/', async (request, response) => {
+	try{
+    	let sql = `SELECT r.id, r.name, r.opening_time, r.closing_time, r.email, t.tax_size FROM restaurants as r LEFT JOIN taxes as t ON r.fk_tax_id = t.id WHERE approved = 1 ORDER BY t.id DESC`;
+    	let result = await db.executeSqlQuery(sql, []);
+    
+    	response.status(200).send({success: true, restaurants: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.delete('/restaurants/:id', async (request, response) => {
+	try{		
+		let sql = 'SELECT fk_tax_id FROM restaurants WHERE id = ?';
+		let result = await db.executeSqlQuery(sql, [request.params.id]);
+
+		let sql2 = `UPDATE restaurants SET approved = 0, fk_admin_id = NULL, fk_tax_id = NULL WHERE id = ?`;
+    	let result2 = await db.executeSqlQuery(sql2, [request.params.id]);
+
+		console.log(result);
+
+		let sql3 = 'DELETE FROM taxes WHERE id = ?';
+		let result3 = await db.executeSqlQuery(sql3, [result[0].fk_tax_id]);
+		
+    	response.status(200).send({success: true});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.put('/restaurants/:restaurantId/agreement', async (request, response) => {
+	console.log("dsafs");
+	try{
+		let rate = request.body.tax;
+		let restaurantId = request.params.restaurantId;
+
+		let sql = 'SELECT fk_tax_id FROM restaurants WHERE id = ?';
+		let result = await db.executeSqlQuery(sql, [restaurantId]);
+		
+		let sql3 = 'UPDATE taxes SET tax_size = ? WHERE id = ?';
+		let result3 = await db.executeSqlQuery(sql3, [rate, result[0].fk_tax_id]);
+
+    	response.status(200).send({success: true});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
 	}
 })

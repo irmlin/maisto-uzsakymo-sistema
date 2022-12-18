@@ -1,17 +1,41 @@
 import Navbar from "../Components/Navbar";
 import SimplePageContent from "../Components/SimplePageContent";
 import { UserContext } from "../Contexts/UserContext";
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 import { ROLES } from "../Enums/Enums";
 import { Table, TableHead, TableRow, TableCell, TableBody } from "@mui/material";
 import SupplierData from "../TempData/SupplierData";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { deleteRestaurant, getRestaurants } from "../Services/AdminService";
 
 export default function Suppliers() {
     
     const { userData } = useContext(UserContext);
     const navigate  = useNavigate();
+    const [changed, setChanged] = useState(false);
+
+    const [supplierData, setSupplierData] = useState([]);
+
+    const fetchRestaurantData = async () => {
+      const response = await getRestaurants();
+      
+      if (response) {
+        if (response.data.success) {
+          setSupplierData(response.data.restaurants);
+          console.log(supplierData);
+        }
+      }
+    };
+
+    useEffect(() => {
+      fetchRestaurantData();
+    }, [changed]);
+
+    const handleDelete = async (id) => {
+      await deleteRestaurant(id);
+      setChanged(!changed);
+    }
 
     return (
         <div>
@@ -21,7 +45,7 @@ export default function Suppliers() {
                 Tiekėjai
               </motion.h2>
                 {
-                    userData.role === ROLES.ADMINISTRATOR && (
+                    userData.role === ROLES.ADMINISTRATOR && supplierData && (
                         <>
                           <Table>
                             <TableHead>
@@ -47,26 +71,26 @@ export default function Suppliers() {
                             </TableHead>
                             <TableBody>
                               {
-                                SupplierData.map(supplier => (
-                                  <TableRow key={supplier.supplierNumber}>
+                                supplierData.map(supplier => (
+                                  <TableRow key={supplier.id}>
                                     <TableCell>
-                                      {supplier.supplierName}
+                                      {supplier.name}
                                     </TableCell>
                                     <TableCell>
-                                        {supplier.supplierOpen.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'})}
+                                        {supplier.opening_time}
                                     </TableCell>
                                     <TableCell>
-                                        {supplier.supplierClose.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'})}
+                                        {supplier.closing_time}
                                     </TableCell>
                                     <TableCell>
-                                        {supplier.supplierEmail}
+                                        {supplier.email}
                                     </TableCell>
                                     <TableCell>
-                                        {supplier.supplierFee}
+                                        {supplier.tax_size}
                                     </TableCell>
                                     <TableCell>
-                                        <button>Pašalinti</button>
-                                        <button onClick={() => navigate(`/EditSupplier/${supplier.supplierNumber}`)}>Redaguoti</button>
+                                        <button  onClick={() => handleDelete(supplier.id)}>Pašalinti</button>
+                                        <button onClick={() => navigate(`/EditSupplier/${supplier.id}`)}>Redaguoti</button>
                                     </TableCell>
                                   </TableRow>
                                 ))

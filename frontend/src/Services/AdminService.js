@@ -72,3 +72,20 @@ export const getRestaurants = async () => {
   }
 }
 
+export const deleteRestaurant = async (restaurantId) => {
+  try {
+      return await axiosInstance.delete(`/restaurants/${restaurantId}`);
+  } catch (err) {
+      console.error("Error occured while selecting couriers", err.response);
+      return err.response;
+  }
+}
+
+export const editRestaurant = async (restaurantId, tax) => {
+  try {
+      return await axiosInstance.put(`/restaurants/${restaurantId}/agreement`, {tax});
+  } catch (err) {
+      console.error("Error occured while selecting couriers", err.response);
+      return err.response;
+  }
+}

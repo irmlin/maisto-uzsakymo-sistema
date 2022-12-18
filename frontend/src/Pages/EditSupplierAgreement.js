@@ -3,7 +3,7 @@ import SimplePageContent from "../Components/SimplePageContent";
 import { TextField } from "@mui/material";
 import NewSupplierData from "../TempData/NewSupplierData";
 import { UserContext } from "../Contexts/UserContext";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { ROLES } from "../Enums/Enums";
 import { useParams } from 'react-router';
 import Navbar from "../Components/Navbar";
@@ -11,6 +11,8 @@ import GridPageContent from "../Components/GridPageContent";
 import { motion } from "framer-motion";
 import StyledButton from "../Components/StyledButton";
 import { useNavigate } from "react-router-dom";
+import { editRestaurant } from "../Services/AdminService";
+import { getUserData } from "../Services/UserService";
 
 export default function ApproveSupplier() {
 
@@ -18,7 +20,29 @@ export default function ApproveSupplier() {
   const { userData } = useContext(UserContext);
   const [ fee, setFee] = useState("");
   const { supplierId } = useParams();
-  const supplier = NewSupplierData.find(r => r.supplierNumber === Number(supplierId));
+  const [ supplierData, setSupplierData ] = useState();
+
+  const fetchSupplierData = async () => {
+    const response = await getUserData(ROLES.RESTAURANT, supplierId);
+    if (response) {
+      if (response.data.success) {
+        setSupplierData(response.data.profileData);
+      }
+    }
+    
+  };
+
+  useEffect(() => {
+    fetchSupplierData();
+  }, []);
+
+  const handleSubmit = async () => {
+    const response = await editRestaurant(
+      supplierId,
+      fee
+    );
+    navigate(`/SuppliersList`);
+  };
 
   return (
     <>
@@ -30,19 +54,19 @@ export default function ApproveSupplier() {
       
     <SimplePageContent>
                 {
-                    userData.role === ROLES.ADMINISTRATOR && (
+                    userData.role === ROLES.ADMINISTRATOR && supplierData && (
                         <>
                             <div style={{padding: '10px'}}>
-                                <b>Tiekėjo pavadinimas: </b>{supplier.supplierName}
+                                <b>Tiekėjo pavadinimas: </b>{supplierData.name}
                             </div>
                             <div style={{padding: '10px'}}>
-                                <b>Atsidarymo laikas: </b>{supplier.supplierOpen.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'})}
+                                <b>Atsidarymo laikas: </b>{supplierData.opening_time}
                             </div>
                             <div style={{padding: '10px'}}>
-                                <b>Užsidarymo laikas: </b>{supplier.supplierClose.toLocaleTimeString(navigator.language, {hour: '2-digit', minute:'2-digit'})}
+                                <b>Užsidarymo laikas: </b>{supplierData.closing_time}
                             </div>
                             <div style={{padding: '10px'}}>
-                                <b>Tiekėjo e. paštas: </b>{supplier.supplierEmail}
+                                <b>Tiekėjo e. paštas: </b>{supplierData.email}
                             </div>
                             <div style={{padding: '10px'}}>
                                 <b>Tiekėjo mokestis: </b>
@@ -52,6 +76,7 @@ export default function ApproveSupplier() {
                                   size="small"
                                   required
                                   name="fee"
+                                  placeholder={supplierData.tax_size.toString()}
                                   id="fee"
                                   onChange={event => setFee(event.target.value)}
                                   value={fee}                                  
@@ -61,7 +86,7 @@ export default function ApproveSupplier() {
                             <div style={{display:'flex', flexDirection:'row', flexWrap: 'wrap', padding: '15px',}}>
                             
                             <StyledButton style={{flex: 1}}
-                              onClick={() => navigate(`/SuppliersList`)}
+                              onClick={() =>handleSubmit()}
                             >
                                 Išsaugoti
                             </StyledButton>
