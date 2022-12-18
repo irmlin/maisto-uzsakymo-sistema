@@ -18,7 +18,6 @@ export default function MenuAll() {
 
   const fetchRestaurants = async () => {
     const response = await getRestaurants(userData.cityId);
-
     if (!response || !response.data.success) {
       showError(response ? response.data.message : "Serverio klaida");
       return;

@@ -18,7 +18,7 @@ export default function CourierOrderDialog({open, setOpen}) {
   );
 
   const [foodTakenDisabled, setFoodTakenDisabled] = useState(
-    emptyOrder ? true : orderInfo.basicInfo.orderStatus !== ORDER_STATES.DONE_COOKING
+    emptyOrder ? true : orderInfo.basicInfo.orderStatus === ORDER_STATES.FOOD_TAKEN || orderInfo.basicInfo.orderStatus === ORDER_STATES.COMPLETED
   );
   
   const [foodDelivered, setFoodDelivered] = useState(
@@ -49,7 +49,7 @@ export default function CourierOrderDialog({open, setOpen}) {
       }
     })
 
-    setFoodTakenDisabled(response.data.order[0].status !== ORDER_STATES.DONE_COOKING);
+    setFoodTakenDisabled(response.data.order[0].status === ORDER_STATES.FOOD_TAKEN || response.data.order[0].status === ORDER_STATES.COMPLETED);
     setFoodDeliveredDisabled(response.data.order[0].status !== ORDER_STATES_FOR_COURIER.FOOD_TAKEN);
   }
 

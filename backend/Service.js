@@ -137,6 +137,7 @@ app.post('/login', express.json({type: '*/*'}), async (request, response) => {
 		const isCourier = role === ROLES.COURIER.ROLENAME; 
 		let sql = `SELECT COUNT(id) AS found, id` + 
 			(isAdmin ? `` : `, fk_city_id`) +
+			(isCourier ? `, approved` : ``) + 
 			`, username, email, password FROM ${tableName} WHERE email = ? OR username = ? GROUP BY id`;
 		let result = await db.executeSqlQuery(sql, [emailOrUsername, emailOrUsername]);
 
@@ -176,7 +177,24 @@ app.post('/login', express.json({type: '*/*'}), async (request, response) => {
 		response.status(500).send({message: "Serverio klaida"});
 	}
 })
-
+app.get('/couriers/adminReport', async (request, response) => {
+	console.log("Asd");
+	try{
+    	let sql = `SELECT c.id, c.firstname, c.lastname, SUM(if(o.status = 'Užbaigtas', 1, 0)) AS completed, SUM(if(o.status = 'Atšauktas', 1, 0)) AS declined, SUM(df.tariff_size) as money
+		FROM couriers AS c 
+		LEFT JOIN orders AS o ON c.id = o.fk_courier_id
+		LEFT JOIN delivery_tariffs AS df ON o.fk_delivery_tariff_id = df.id
+		GROUP BY c.id`;
+    	let result = await db.executeSqlQuery(sql, []);
+		console.log(result);
+    
+    	response.status(200).send({success: true, couriers: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
 app.get('/courier/:id/data', async (request, response) => {
 	try{
 		let id = request.params.id;
@@ -184,9 +202,9 @@ app.get('/courier/:id/data', async (request, response) => {
 			cr.birth_date, cr.employed_from,
 			cr.phone_number, cr.transport, cr.email,
 			cr.approved, cr.status,
-			c.name AS city, c.county
+			c.name AS city, c.county, df.tariff_size
 			FROM couriers AS cr INNER JOIN cities AS c 
-			ON c.id = cr.fk_city_id WHERE cr.id = ?`;
+			ON c.id = cr.fk_city_id LEFT JOIN delivery_tariffs as df ON cr.id = df.fk_courier_id WHERE cr.id = ?`;
 
     let result = await db.executeSqlQuery(sql, [id]);
     response.status(200).send(JSON.stringify({profileData: result[0], success: true}));
@@ -200,7 +218,7 @@ app.get('/courier/:id/data', async (request, response) => {
 app.get('/restaurant/:id/data', async (request, response) => {
 	try{
 		let id = request.params.id;
-    let sql = 'SELECT name, address, opening_time, closing_time, email FROM restaurants WHERE id = ?';
+    let sql = 'SELECT r.name, r.address, r.opening_time, r.closing_time, r.email, t.tax_size FROM restaurants as r LEFT JOIN taxes as t ON r.fk_tax_id = t.id WHERE r.id = ?';
     let result = await db.executeSqlQuery(sql, [id]);
     
     response.status(200).send(JSON.stringify({profileData: result[0], success: true}));
@@ -283,12 +301,32 @@ app.get('/cities', async (request, response) => {
 	}
 })
 
+app.get('/restaurants/adminReport', async (request, response) => {
+	console.log("Asd");
+	try{
+    	let sql = `SELECT r.id, r.name, COUNT(o.id) as order_count, SUM(cm.amount) as meal_count, SUM(o.price) as price, SUM(cm.amount)*t.tax_size as taxes
+		FROM restaurants as r
+		LEFT JOIN meals as m ON m.fk_restaurant_id = r.id
+		LEFT JOIN cart_meals as cm ON cm.fk_meal_id = m.id
+		LEFT JOIN carts as c ON c.id = cm.fk_cart_id
+		LEFT JOIN orders as o ON c.fk_order_id = o.id
+		LEFT JOIN taxes as t ON r.fk_tax_id = t.id GROUP BY r.id`;
+    	let result = await db.executeSqlQuery(sql, []);
+		console.log(result);
+    
+    	response.status(200).send({success: true, restaurants: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
 app.get('/restaurants/:cityId', async (request, response) => {
 	try{
 		let id = request.params.cityId;
     let sql = `SELECT id, name, address, opening_time, closing_time FROM restaurants WHERE approved = 1 AND fk_city_id = ?`;
     let result = await db.executeSqlQuery(sql, [id]);
-    
     response.status(200).send({success: true, restaurants: result});
 	}
 	catch (e) {
@@ -403,7 +441,7 @@ app.put('/orders/:orderId/cancel-courier', async (request, response) => {
 	try{
 		let orderId = request.params.orderId;
 		let courierId = request.body.courierId;
-		let sql = 'UPDATE orders SET fk_courier_id = null WHERE id = ?';
+		let sql = 'UPDATE orders SET fk_courier_id = null, fk_delivery_tariff_id = null, status = "Užsakytas kliento" WHERE id = ?';
 		let result = await db.executeSqlQuery(sql, [orderId]);
 		let sqlStatus = 'UPDATE couriers set status = ? WHERE id = ?';
 		let resultStatus = await db.executeSqlQuery(sqlStatus, [COURIER_STATES.WAITING_FOR_ORDER, courierId]);
@@ -435,8 +473,8 @@ app.put('/unaprovedRestaurants/:id', async (request, response) => {
     	let sql = `INSERT INTO taxes (applied_from, applied_until, tax_size, fk_admin_id) VALUES (NOW(), DATE_ADD(NOW(), INTERVAL 365 DAY), ?, ?)`;
     	let result = await db.executeSqlQuery(sql, [tax, adminId]);
 
-		let sql2 = `UPDATE restaurants SET fk_tax_id = ?, approved = ? WHERE id = ?`;
-		let result2 = await db.executeSqlQuery(sql2, [result.insertId, 1, restaurantId]);
+		let sql2 = `UPDATE restaurants SET fk_tax_id = ?, approved = ?, fk_admin_id = ? WHERE id = ?`;
+		let result2 = await db.executeSqlQuery(sql2, [result.insertId, 1, adminId, restaurantId]);
 		
     	response.status(200).send({success: true});
 	}
@@ -523,8 +561,55 @@ app.put('/unaprovedCouriers/:id', async (request, response) => {
     	let sql = `INSERT INTO delivery_tariffs (applied_from, applied_until, tariff_size, fk_courier_id, fk_admin_id) VALUES (NOW(), DATE_ADD(NOW(), INTERVAL 365 DAY), ?, ?, ?)`;
     	let result = await db.executeSqlQuery(sql, [tax, courierId, adminId]);
 
-		let sql2 = `UPDATE couriers SET approved = ?, employed_from = NOW() WHERE id = ?`;
-		let result2 = await db.executeSqlQuery(sql2, [1, courierId]);
+		let sql2 = `UPDATE couriers SET approved = ?, fk_admin_id = ?, employed_from = CURDATE() WHERE id = ?`;
+		let result2 = await db.executeSqlQuery(sql2, [1, adminId, courierId]);
+
+    	response.status(200).send({success: true});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.get('/couriers/', async (request, response) => {
+	try{
+    	let sql = `SELECT c.id, c.firstname, c.lastname, c.birth_date, c.employed_from, c.phone_number, c.email, c.transport, c.status, df.tariff_size FROM couriers as c LEFT JOIN delivery_tariffs as df ON c.id = df.fk_courier_id WHERE approved = 1 ORDER BY df.id DESC`;
+    	let result = await db.executeSqlQuery(sql, []);
+    
+    	response.status(200).send({success: true, couriers: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.delete('/couriers/:id', async (request, response) => {
+	try{		
+		let sql = `UPDATE couriers SET approved = 0, fk_admin_id = NULL, employed_from = NULL WHERE id = ?`;
+    	let result = await db.executeSqlQuery(sql, [request.params.id]);
+
+		let sql2 = `DELETE FROM delivery_tariffs WHERE fk_courier_id = ?`;
+		let result2 = await db.executeSqlQuery(sql2, [request.params.id]);
+    
+    	response.status(200).send({success: true, couriers: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.put('/couriers/:courierId/agreement', async (request, response) => {
+	console.log("dsafs");
+	try{
+		let rate = request.body.rate;
+		let courierId = request.params.courierId;
+
+		
+		let sql2 = `UPDATE delivery_tariffs SET applied_from=CURDATE(), applied_until = DATE_ADD(CURDATE(), INTERVAL 365 DAY), tariff_size = ? WHERE fk_courier_id = ?`;
+		let result2 = await db.executeSqlQuery(sql2, [rate, courierId]);
 
     	response.status(200).send({success: true});
 	}
@@ -592,3 +677,72 @@ app.put('/meals/:mealid/deletemeal', async (request, response) => {
 		response.status(500).send({message: e.sqlMessage, success: false});
 	}
 })
+
+
+app.get('/restaurants/', async (request, response) => {
+	try{
+    	let sql = `SELECT r.id, r.name, r.opening_time, r.closing_time, r.email, t.tax_size FROM restaurants as r LEFT JOIN taxes as t ON r.fk_tax_id = t.id WHERE approved = 1 ORDER BY t.id DESC`;
+    	let result = await db.executeSqlQuery(sql, []);
+    
+    	response.status(200).send({success: true, restaurants: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.delete('/restaurants/:id', async (request, response) => {
+	try{		
+		let sql = 'SELECT fk_tax_id FROM restaurants WHERE id = ?';
+		let result = await db.executeSqlQuery(sql, [request.params.id]);
+
+		let sql2 = `UPDATE restaurants SET approved = 0, fk_admin_id = NULL, fk_tax_id = NULL WHERE id = ?`;
+    	let result2 = await db.executeSqlQuery(sql2, [request.params.id]);
+
+		console.log(result);
+
+		let sql3 = 'DELETE FROM taxes WHERE id = ?';
+		let result3 = await db.executeSqlQuery(sql3, [result[0].fk_tax_id]);
+		
+    	response.status(200).send({success: true});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.put('/restaurants/:restaurantId/agreement', async (request, response) => {
+	console.log("dsafs");
+	try{
+		let rate = request.body.tax;
+		let restaurantId = request.params.restaurantId;
+
+		let sql = 'SELECT fk_tax_id FROM restaurants WHERE id = ?';
+		let result = await db.executeSqlQuery(sql, [restaurantId]);
+		
+		let sql3 = 'UPDATE taxes SET tax_size = ? WHERE id = ?';
+		let result3 = await db.executeSqlQuery(sql3, [rate, result[0].fk_tax_id]);
+
+    	response.status(200).send({success: true});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
+app.get('/clients/adminReport', async (request, response) => {
+	try{
+    	let sql = `SELECT cl.id, cl.firstname, cl.lastname, COUNT(o.id) as order_count, SUM(o.price) as order_sum FROM clients as cl LEFT JOIN orders as o ON cl.id = o.fk_client_id GROUP BY cl.id`;
+    	let result = await db.executeSqlQuery(sql, []);
+    
+    	response.status(200).send({success: true, clients: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+

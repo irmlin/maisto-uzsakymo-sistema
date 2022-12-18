@@ -1,12 +1,12 @@
 import Navbar from "../Components/Navbar";
 import SimplePageContent from "../Components/SimplePageContent";
 import { UserContext } from "../Contexts/UserContext";
-import { useContext, useState} from "react";
+import { useContext, useState, useEffect} from "react";
 import { ROLES } from "../Enums/Enums";
 import { Table, TableHead, TableRow, TableCell, TableBody, Select, MenuItem, TextField} from "@mui/material";
-import CouriersReports from "../TempData/CourierReports";
 import StyledButton from "../Components/StyledButton";
 import { motion } from "framer-motion";
+import { getCouriersReport } from "../Services/AdminService";
 
 export default function NewCouriers() {
     
@@ -16,7 +16,92 @@ export default function NewCouriers() {
     const [ column, setColumn] = useState("");
     const [ filter, setFilter] = useState("");
     const [ sort, setSort] = useState("");
+    const [ listToShow, setShow ] = useState([]);
+    const [ couriers, setCouriers ] = useState([]);
 
+    const fetchCouriersData = async () => {
+      const response = await getCouriersReport();
+      
+      if (response) {
+        if (response.data.success) {
+          setCouriers(response.data.couriers);
+          setShow(response.data.couriers);
+        }
+      }
+    };
+
+    useEffect(() => {
+      fetchCouriersData();
+      setShow(couriers);
+    }, []);
+
+    const applyFiltersSort = () => {
+      console.log("Aaaaaa");
+      let showList = couriers;
+      if (filterSort == 'filter') {
+        if(column == 'name') {
+          showList = showList.filter((client) => client.firstname == filter);
+        }
+        else if (column == 'surname') {
+          showList = showList.filter((client) => client.lastname == filter);
+        }
+        else if (column == 'delivered') {
+          showList = showList.filter((client) => client.completed == filter);
+        }
+        else if (column == 'canceled') {
+          showList = showList.filter((client) => client.declined == filter);
+        }
+        else {
+          showList = showList.filter((client) => client.money == filter);
+        }       
+        setShow(showList);
+      }
+      else {
+        if(column == 'name') {
+          if(sort == 'asc') {
+            showList = showList.sort((a, b) => a.firstname.localeCompare(b.firstname));
+          } 
+          else {
+            showList = showList.sort((a, b) => b.firstname.localeCompare(a.firstname));
+          }          
+        }
+        
+        else if (column == 'surname') {
+          if(sort == 'asc') {
+            showList = showList.sort((a, b) => a.lastname.localeCompare(b.lastname));
+          } 
+          else {
+            showList = showList.sort((a, b) => b.lastname.localeCompare(a.lastname));
+          }
+          
+        }
+        else if (column == 'delivered') {
+          if(sort == 'asc') {
+            showList = showList.sort((a, b) => a.completed - b.completed);
+          } 
+          else {
+            showList = showList.sort((a, b) => b.completed - a.completed);
+          }
+        }
+        else if (column == 'canceled') {
+          if(sort == 'asc') {
+            showList = showList.sort((a, b) => a.declined - b.declined);
+          } 
+          else {
+            showList = showList.sort((a, b) => b.declined - a.declined);
+          }
+        }
+        else  {
+          if(sort == 'asc') {
+            showList = showList.sort((a, b) => a.money - b.money);
+          } 
+          else {
+            showList = showList.sort((a, b) => b.money - a.money);
+          }
+        }       
+        setShow(showList);
+      }
+    }
     return (
         <div>
             <Navbar/>
@@ -25,7 +110,7 @@ export default function NewCouriers() {
                 Kurjerių ataskaitos
               </motion.h2>
                 {
-                    userData.role === ROLES.ADMINISTRATOR && (
+                    userData.role === ROLES.ADMINISTRATOR && listToShow && (
                         <>
                           <motion.h4>
                             Funkcijos
@@ -61,7 +146,7 @@ export default function NewCouriers() {
                                   value={filter}                                  
                                   />
                                 }
-                                { filterSort === "filter" && <StyledButton 
+                                { filterSort === "filter" && <StyledButton onClick={() =>applyFiltersSort()}
                             >
                                 Filtruoti
                             </StyledButton>
@@ -76,7 +161,7 @@ export default function NewCouriers() {
                                       <MenuItem value="desc">Mažėjančia tvarka</MenuItem>                                    
                                 </Select>
                                 }
-                                { filterSort === "sort" && <StyledButton 
+                                { filterSort === "sort" && <StyledButton onClick={() =>applyFiltersSort()}
                             >
                                 Rikiuoti
                             </StyledButton>
@@ -103,22 +188,22 @@ export default function NewCouriers() {
                             </TableHead>
                             <TableBody>
                               {
-                                CouriersReports.reports.map(courier => (
-                                  <TableRow key={courier.clientNumber}>
+                                listToShow.map(courier => (
+                                  <TableRow key={courier.id}>
                                     <TableCell>
-                                      {courier.courierName}
+                                      {courier.firstname}
                                     </TableCell>
                                     <TableCell>
-                                      {courier.courierSurname}
+                                      {courier.lastname}
                                     </TableCell>
                                     <TableCell>
-                                      {courier.deliveredOrders}
+                                      {courier.completed}
                                     </TableCell>
                                     <TableCell>
-                                      {courier.canceledOrders}
+                                      {courier.declined}
                                     </TableCell>
                                     <TableCell>
-                                      {courier.moneyEarned} €
+                                      {courier.money} €
                                     </TableCell>
                                   </TableRow>
                                 ))
@@ -126,16 +211,22 @@ export default function NewCouriers() {
                             </TableBody>
                           </Table>
                           <div style={{padding: '10px'}}>
-                                <b>Išviso kurjerių: </b>{CouriersReports.totalCouriers}
+                                <b>Išviso kurjerių: </b>{listToShow.length}
                           </div>
                           <div style={{padding: '10px'}}>
-                                <b>Išviso atšauktų užsakymų: </b>{CouriersReports.totalCanceled}
+                                <b>Išviso atšauktų užsakymų: </b>{listToShow.reduce(function(prev, current) {
+                                                          return prev + +current.declined
+                                                          }, 0)}
                           </div>
                           <div style={{padding: '10px'}}>
-                                <b>Išviso pristatytų užsakymų: </b>{CouriersReports.totalDelivered}
+                                <b>Išviso pristatytų užsakymų: </b>{listToShow.reduce(function(prev, current) {
+                                                          return prev + +current.completed
+                                                          }, 0)}
                           </div>
                           <div style={{padding: '10px'}}>
-                                <b>Uždirbta pinigų: </b>{CouriersReports.totalMoney} €
+                                <b>Uždirbta pinigų: </b>{listToShow.reduce(function(prev, current) {
+                                                          return prev + +current.money
+                                                          }, 0)} €
                           </div>
                         </>
                         
