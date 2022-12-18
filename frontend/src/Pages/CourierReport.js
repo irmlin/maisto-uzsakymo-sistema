@@ -203,7 +203,7 @@ export default function NewCouriers() {
                                       {courier.declined}
                                     </TableCell>
                                     <TableCell>
-                                      {courier.money} €
+                                      {courier.money ? courier.money : 0} €
                                     </TableCell>
                                   </TableRow>
                                 ))

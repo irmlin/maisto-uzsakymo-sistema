@@ -49,7 +49,7 @@ export default function ApproveSupplier() {
     <Navbar/>
     <GridPageContent>
         <motion.h2 className="header">
-          Patvirtinti tiekėją
+          Redaguoti tiekėjo sutartį
         </motion.h2>
       
     <SimplePageContent>

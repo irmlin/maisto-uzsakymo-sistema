@@ -180,7 +180,7 @@ app.post('/login', express.json({type: '*/*'}), async (request, response) => {
 app.get('/couriers/adminReport', async (request, response) => {
 	console.log("Asd");
 	try{
-    	let sql = `SELECT c.id, c.firstname, c.lastname, SUM(if(o.status = 'Užbaigtas', 1, 0)) AS completed, SUM(if(o.status = 'Atšauktas', 1, 0)) AS declined, SUM(df.tariff_size) as money
+    	let sql = `SELECT c.id, c.firstname, c.lastname, SUM(if(o.status = 'Užbaigtas', 1, 0)) AS completed, SUM(if(o.status = 'Atšauktas', 1, 0)) AS declined, SUM(if(o.status = 'Atšauktas', df.tariff_size, 0)) as money
 		FROM couriers AS c 
 		LEFT JOIN orders AS o ON c.id = o.fk_courier_id
 		LEFT JOIN delivery_tariffs AS df ON o.fk_delivery_tariff_id = df.id
