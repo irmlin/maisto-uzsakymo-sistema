@@ -76,10 +76,10 @@ export default function OrderHistory() {
 
   function filterOrderData() {
     if (!dateFrom && !dateTo) {
-      return setorderData(orderData);
+      return orderData;
     }
     if(dateFrom && !dateTo){
-      return setorderData(orderData.filter(order => order.date >= dateFrom));
+      return orderData.filter(order => order.date >= dateFrom);
     }
     if(!dateFrom && dateTo){
       return orderData.filter(order => order.date <= dateTo);
@@ -257,10 +257,7 @@ export default function OrderHistory() {
               </TableBody>
             </Table>
 
-            
-          </>
-        )}
-        <div>
+            <div>
               <Button
                   onClick={addToSum}
                   type="submit"
@@ -271,7 +268,9 @@ export default function OrderHistory() {
               Skaičiuoti sumą
               </Button>
               <h3>Suma: {fullsum}</h3>
-        </div>
+            </div>
+          </>
+        )}
         <Snackbar
           open={snackOpen}
           autoHideDuration={4000}

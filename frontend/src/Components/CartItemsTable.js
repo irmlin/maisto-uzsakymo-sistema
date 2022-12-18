@@ -37,7 +37,7 @@ export default function CartItemsTable({items}) {
                 }
                 <TableCell>{item.meal.name}</TableCell>
                 <TableCell>{item.count}</TableCell>
-                <TableCell>{item.meal.vegetarian}</TableCell>
+                <TableCell>{item.meal.vegetarian ? "Taip" : "Ne"}</TableCell>
                 <TableCell>{item.meal.price}</TableCell>
               </TableRow>
             ))

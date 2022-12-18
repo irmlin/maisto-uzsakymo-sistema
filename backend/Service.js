@@ -746,3 +746,46 @@ app.get('/clients/adminReport', async (request, response) => {
 	}
 })
 
+
+app.post('/orders/create', async (request, response) => {  
+	try{;
+		let meals = request.body.meals;
+		let userId = request.body.userId;
+		let address = request.body.address;
+		let comment = request.body.comment === undefined ? null : request.body.comment;
+
+		let sqlLastId = "SELECT id FROM orders ORDER BY id DESC LIMIT 1";
+		let sqlLastIdResult = await db.executeSqlQuery(sqlLastId, []);
+		let orderNumber = sqlLastIdResult[0].id + 1;
+		let sqlOrder = `INSERT INTO orders values(
+			null, ?, NOW(), null, ?, ?, "Užsakytas kliento", null, null, ?
+		)`;
+		let orderResult = await db.executeSqlQuery(sqlOrder, [
+			`ord${orderNumber}`, address, comment, userId
+		]);
+
+		let sqlLastId2 = "SELECT id FROM orders ORDER BY id DESC LIMIT 1";
+		let sqlLastIdResult2 = await db.executeSqlQuery(sqlLastId2, []);
+		let orderId = sqlLastIdResult2[0].id;
+
+		let orderSum = meals.reduce((sum, val) => sum + val.meal.price, 0.0);
+		let sqlCart = `INSERT INTO carts VALUES(null, ?, NOW(), ?)`; console.log(orderSum, orderNumber)
+		let resultCart = await db.executeSqlQuery(sqlCart, [orderSum, orderId]);
+
+		let sqlLastCartId = "SELECT id FROM carts ORDER BY id DESC LIMIT 1";
+		let sqlLastCartIdResult = await db.executeSqlQuery(sqlLastCartId, []);
+		let cartId = sqlLastCartIdResult[0].id;
+
+		for(let i=0; i < meals.length; i++) {
+			let m = meals[i];
+			let sql = `INSERT INTO cart_meals VALUES(null, ?, ?, ?)`;
+			let result = await db.executeSqlQuery(sql, [m.count, cartId, m.meal.id]);
+		}
+
+    response.status(200).send({success: true});	
+	}	
+	catch(e){
+		console.log(e)
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})

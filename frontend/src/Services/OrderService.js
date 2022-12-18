@@ -62,3 +62,12 @@ export const getRestaurantCompletedOrders = async (userId) => {
         return err.response;
     }
 }
+
+export const makeOrder = async (orderData) => {
+    try {
+        return await axiosInstance.post(`/orders/create`, orderData);
+    } catch (err) {
+        console.error("Could not create order.", err.response);
+        return err.response;
+    }
+};
