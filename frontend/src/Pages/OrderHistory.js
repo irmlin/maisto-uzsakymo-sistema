@@ -288,7 +288,7 @@ export default function OrderHistory() {
               >
               Skaičiuoti sumą
               </Button>
-              <h3>Suma: {fullsum}</h3>
+              <h3>Suma: {fullsum} Eu.</h3>
         </div>
         <Snackbar
           open={snackOpen}
