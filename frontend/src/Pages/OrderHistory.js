@@ -26,6 +26,7 @@ export default function OrderHistory() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [fullsum, setFullsum] = useState(0);
+  const [ listToShow, setShow ] = useState([]);
 
   const fetchOrders = async () => {
     let response;
@@ -43,10 +44,12 @@ export default function OrderHistory() {
     }
 
     setorderData(response.data.orders);
+    setShow(response.data.orders);
   };
 
   useEffect(() => {
     fetchOrders();
+    setShow(orderData);
   }, [])
 
   function showError(message) {
@@ -87,8 +90,23 @@ export default function OrderHistory() {
     return orderData.filter(order => order.date >= dateFrom && order.date <= dateTo);
   }
 
+  const filterByData = () => {
+    let showList = orderData;
+    if (!dateFrom && !dateTo) {
+      setShow(showList);
+    }
+    if(dateFrom && !dateTo){
+      setShow(showList.filter(order => order.date >= dateFrom));
+    }
+    if(!dateFrom && dateTo){
+      setShow(showList.filter(order => order.date <= dateTo));
+    }
+    setShow(showList.filter(order => order.date >= dateFrom && order.date <= dateTo));
+    setFullsum(0);
+  }
+
   const addToSum = () =>{
-    return setFullsum(orderData.reduce((a, v) => a = a + v.orderPrice, 0))
+    return setFullsum(listToShow.reduce((a, v) => a = a + v.orderPrice, 0))
   }
 
   const filteredOrderData = 
@@ -222,7 +240,7 @@ export default function OrderHistory() {
               value={dateTo}
             />
             <Button
-                  onClick={filterOrderData}
+                  onClick={filterByData}
                   type="submit"
                   size="small"
                   variant="contained"
@@ -242,7 +260,7 @@ export default function OrderHistory() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {orderData.map((order) => (
+                {listToShow.map((order) => (
                   <TableRow key={order.number}>
                     <TableCell>{order.number}</TableCell>
                     <TableCell>{order.status}</TableCell>
