@@ -287,6 +287,7 @@ export default function OrderHistory() {
               </Button>
               <h3>Suma: {fullsum} Eu.</h3>
         </div>
+        </>)}
         <Snackbar
           open={snackOpen}
           autoHideDuration={4000}
