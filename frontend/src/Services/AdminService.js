@@ -89,3 +89,30 @@ export const editRestaurant = async (restaurantId, tax) => {
       return err.response;
   }
 }
+
+export const getRestaurantsReport = async () => {
+  try {
+      return await axiosInstance.get("/restaurants/adminReport");
+  } catch (err) {
+      console.error("Error occured while selecting restaurants", err.response);
+      return err.response;
+  }
+}
+
+export const getCouriersReport = async () => {
+  try {
+      return await axiosInstance.get("/couriers/adminReport");
+  } catch (err) {
+      console.error("Error occured while selecting couriers", err.response);
+      return err.response;
+  }
+}
+
+export const getClientsReport = async () => {
+  try {
+      return await axiosInstance.get("/clients/adminReport");
+  } catch (err) {
+      console.error("Error occured while selecting clients", err.response);
+      return err.response;
+  }
+}

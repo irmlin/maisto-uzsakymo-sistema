@@ -176,7 +176,24 @@ app.post('/login', express.json({type: '*/*'}), async (request, response) => {
 		response.status(500).send({message: "Serverio klaida"});
 	}
 })
-
+app.get('/couriers/adminReport', async (request, response) => {
+	console.log("Asd");
+	try{
+    	let sql = `SELECT c.id, c.firstname, c.lastname, SUM(if(o.status = 'Užbaigtas', 1, 0)) AS completed, SUM(if(o.status = 'Atšauktas', 1, 0)) AS declined, SUM(df.tariff_size) as money
+		FROM couriers AS c 
+		LEFT JOIN orders AS o ON c.id = o.fk_courier_id
+		LEFT JOIN delivery_tariffs AS df ON o.fk_delivery_tariff_id = df.id
+		GROUP BY c.id`;
+    	let result = await db.executeSqlQuery(sql, []);
+		console.log(result);
+    
+    	response.status(200).send({success: true, couriers: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
 app.get('/courier/:id/data', async (request, response) => {
 	try{
 		let id = request.params.id;
@@ -280,6 +297,27 @@ app.get('/cities', async (request, response) => {
 	catch (e) {
 		console.log(e);
 		response.status(500).send("Serverio klaida");
+	}
+})
+
+app.get('/restaurants/adminReport', async (request, response) => {
+	console.log("Asd");
+	try{
+    	let sql = `SELECT r.id, r.name, COUNT(o.id) as order_count, SUM(cm.amount) as meal_count, SUM(o.price) as price, SUM(cm.amount)*t.tax_size as taxes
+		FROM restaurants as r
+		LEFT JOIN meals as m ON m.fk_restaurant_id = r.id
+		LEFT JOIN cart_meals as cm ON cm.fk_meal_id = m.id
+		LEFT JOIN carts as c ON c.id = cm.fk_cart_id
+		LEFT JOIN orders as o ON c.fk_order_id = o.id
+		LEFT JOIN taxes as t ON r.fk_tax_id = t.id GROUP BY r.id`;
+    	let result = await db.executeSqlQuery(sql, []);
+		console.log(result);
+    
+    	response.status(200).send({success: true, restaurants: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
 	}
 })
 
@@ -665,3 +703,17 @@ app.put('/restaurants/:restaurantId/agreement', async (request, response) => {
 		response.status(400).send({message: e.sqlMessage, success: false});
 	}
 })
+
+app.get('/clients/adminReport', async (request, response) => {
+	try{
+    	let sql = `SELECT cl.id, cl.firstname, cl.lastname, COUNT(o.id) as order_count, SUM(o.price) as order_sum FROM clients as cl LEFT JOIN orders as o ON cl.id = o.fk_client_id GROUP BY cl.id`;
+    	let result = await db.executeSqlQuery(sql, []);
+    
+    	response.status(200).send({success: true, clients: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
