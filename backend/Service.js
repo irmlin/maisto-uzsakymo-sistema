@@ -473,6 +473,35 @@ app.get('/orders/by-courier/:courierId', async (request, response) => {
 	}
 })
 
+app.get('/orders/by-restaurant/:restaurantId', async (request, response) => {
+	try{
+		let restaurantId = request.params.restaurantId;
+    let sql = 
+		`
+		SELECT o.number, o.status, o.date, o.delivery_address, c.sum AS orderPrice, cl.firstname, cl.lastname
+		FROM orders AS o
+		INNER JOIN carts AS c ON c.fk_order_id = o.id
+		INNER JOIN clients AS cl ON cl.id = o.fk_client_id
+		INNER JOIN delivery_tariffs AS d ON d.id = o.fk_delivery_tariff_id
+		JOIN (
+			SELECT id, fk_cart_id, fk_meal_id FROM cart_meals WHERE id IN (
+				SELECT MAX(id) FROM cart_meals GROUP BY fk_cart_id
+			)
+		) AS cm ON cm.fk_cart_id = c.id
+		INNER JOIN meals AS m ON m.id = cm.fk_meal_id
+		INNER JOIN restaurants AS r ON r.id = m.fk_restaurant_id
+		WHERE r.id = ? AND o.status = "Užbaigtas";
+		
+		`;
+    let result = await db.executeSqlQuery(sql, [restaurantId]);
+		response.status(200).send({success: true, orders: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
+
 app.get('/unaprovedCouriers/', async (request, response) => {
 	try{
     	let sql = `SELECT id, firstname, lastname, birth_date, phone_number, email, transport FROM couriers WHERE approved = 0`;

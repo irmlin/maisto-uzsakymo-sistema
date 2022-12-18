@@ -15,7 +15,7 @@ import {
   TextField,
 } from "@mui/material";
 import { motion } from "framer-motion";
-import { getCourierCompletedOrders } from "../Services/OrderService";
+import { getCourierCompletedOrders, getRestaurantCompletedOrders } from "../Services/OrderService";
 
 export default function OrderHistory() {
   const { userData } = useContext(UserContext);
@@ -25,6 +25,7 @@ export default function OrderHistory() {
   const [snackColor, setSnackColor] = useState("success");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [fullsum, setFullsum] = useState(0);
 
   const fetchOrders = async () => {
     let response;
@@ -33,7 +34,7 @@ export default function OrderHistory() {
     } else if (userData.role === ROLES.CLIENT) {
       return;
     } else if (userData.role === ROLES.RESTAURANT) {
-      return;
+      response = await getRestaurantCompletedOrders(userData.id);
     }
 
     if (!response || !response.data.success) {
@@ -75,15 +76,19 @@ export default function OrderHistory() {
 
   function filterOrderData() {
     if (!dateFrom && !dateTo) {
-      return orderData;
+      return setorderData(orderData);
     }
     if(dateFrom && !dateTo){
-      return orderData.filter(order => order.date >= dateFrom);
+      return setorderData(orderData.filter(order => order.date >= dateFrom));
     }
     if(!dateFrom && dateTo){
       return orderData.filter(order => order.date <= dateTo);
     }
     return orderData.filter(order => order.date >= dateFrom && order.date <= dateTo);
+  }
+
+  const addToSum = () =>{
+    return setFullsum(orderData.reduce((a, v) => a = a + v.orderPrice, 0))
   }
 
   const filteredOrderData = 
@@ -216,7 +221,15 @@ export default function OrderHistory() {
               InputLabelProps={{ shrink: true }}
               value={dateTo}
             />
-
+            <Button
+                  onClick={filterOrderData}
+                  type="submit"
+                  size="small"
+                  variant="contained"
+                  sx={{ ml: 2}}                                                          
+              >
+              Filtruoti
+            </Button>
             <Table>
               <TableHead>
                 <TableRow>
@@ -230,25 +243,35 @@ export default function OrderHistory() {
               </TableHead>
               <TableBody>
                 {orderData.map((order) => (
-                  <TableRow key={order.orderNumber}>
-                    <TableCell>{order.orderNumber}</TableCell>
-                    <TableCell>{order.orderState}</TableCell>
-                    <TableCell>{order.orderDate.toLocaleString()}</TableCell>
+                  <TableRow key={order.number}>
+                    <TableCell>{order.number}</TableCell>
+                    <TableCell>{order.status}</TableCell>
+                    <TableCell>{order.date.toLocaleString()}</TableCell>
                     <TableCell>{order.orderPrice}</TableCell>
                     <TableCell>
-                      {order.recipientName} {order.recipientLastName}
+                      {order.firstname} {order.lastname}
                     </TableCell>
-                    <TableCell>{order.recipientAddress}</TableCell>
+                    <TableCell>{order.delivery_address}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
 
-            <div>
-              <h3>Suma:</h3>
-            </div>
+            
           </>
         )}
+        <div>
+              <Button
+                  onClick={addToSum}
+                  type="submit"
+                  size="small"
+                  variant="contained"
+                  sx={{ ml: 2}}                                                          
+              >
+              Skaičiuoti sumą
+              </Button>
+              <h3>Suma: {fullsum}</h3>
+        </div>
         <Snackbar
           open={snackOpen}
           autoHideDuration={4000}
