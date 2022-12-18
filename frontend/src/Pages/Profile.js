@@ -368,27 +368,6 @@ export default function Profile() {
                   </TableCell>
                   <TableCell>{profileData.username}</TableCell>
                 </TableRow>
-                <TableRow>
-                  <TableCell>
-                    <b>Pristatymo adresas</b>
-                  </TableCell>
-                  <TableCell>
-                    <input
-                      type="text"
-                      id="address"
-                      name="adresas"
-                      placeholder="Įveskite pristatymo adresą.."
-                    ></input>
-                    <Button
-                      type="submit"
-                      size="small"
-                      variant="contained"
-                      sx={{ ml: 2 }}
-                    >
-                      Išsaugoti
-                    </Button>
-                  </TableCell>
-                </TableRow>
               </TableBody>
             </Table>
           </TableContainer>
