@@ -149,7 +149,7 @@ export default function Dishes () {
                                 {meal.price}
                                 </TableCell>
                                 <TableCell>
-                                {meal.vegetarian ? "Taip" : ""}
+                                {meal.vegetarian ? "Taip" : "Ne"}
                                 </TableCell>
 
                                 

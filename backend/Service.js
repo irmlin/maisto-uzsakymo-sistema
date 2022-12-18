@@ -137,6 +137,7 @@ app.post('/login', express.json({type: '*/*'}), async (request, response) => {
 		const isCourier = role === ROLES.COURIER.ROLENAME; 
 		let sql = `SELECT COUNT(id) AS found, id` + 
 			(isAdmin ? `` : `, fk_city_id`) +
+			(isCourier ? `, approved` : ``) + 
 			`, username, email, password FROM ${tableName} WHERE email = ? OR username = ? GROUP BY id`;
 		let result = await db.executeSqlQuery(sql, [emailOrUsername, emailOrUsername]);
 
@@ -326,7 +327,6 @@ app.get('/restaurants/:cityId', async (request, response) => {
 		let id = request.params.cityId;
     let sql = `SELECT id, name, address, opening_time, closing_time FROM restaurants WHERE approved = 1 AND fk_city_id = ?`;
     let result = await db.executeSqlQuery(sql, [id]);
-    
     response.status(200).send({success: true, restaurants: result});
 	}
 	catch (e) {
@@ -441,7 +441,7 @@ app.put('/orders/:orderId/cancel-courier', async (request, response) => {
 	try{
 		let orderId = request.params.orderId;
 		let courierId = request.body.courierId;
-		let sql = 'UPDATE orders SET fk_courier_id = null WHERE id = ?';
+		let sql = 'UPDATE orders SET fk_courier_id = null, fk_delivery_tariff_id = null, status = "Užsakytas kliento" WHERE id = ?';
 		let result = await db.executeSqlQuery(sql, [orderId]);
 		let sqlStatus = 'UPDATE couriers set status = ? WHERE id = ?';
 		let resultStatus = await db.executeSqlQuery(sqlStatus, [COURIER_STATES.WAITING_FOR_ORDER, courierId]);
