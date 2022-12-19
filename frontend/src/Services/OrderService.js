@@ -79,3 +79,13 @@ export const makeOrder = async (orderData) => {
         return err.response;
     }
 };
+
+
+export const updateOrderPrice = async (orderId, cartPrice, courierId) => {
+    try {
+        return await axiosInstance.put(`/orders/${orderId}/update-price`, {cartPrice, courierId});
+    } catch (err) {
+        console.error("Could not update price.", err.response);
+        return err.response;
+    }
+};

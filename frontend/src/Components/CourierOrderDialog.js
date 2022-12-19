@@ -1,7 +1,7 @@
 import { Alert, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, FormGroup, IconButton, MenuItem, Select, Snackbar } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { COURIER_STATES, ORDER_STATES, ORDER_STATES_FOR_COURIER } from "../Enums/Enums";
-import { cancelDelivery, updateOrderStatus } from "../Services/OrderService";
+import { cancelDelivery, updateOrderPrice, updateOrderStatus } from "../Services/OrderService";
 import { CourierContext } from "../Contexts/CourierContext";
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { getOrderById } from "../Services/OrderService";
@@ -118,6 +118,8 @@ export default function CourierOrderDialog({open, setOpen}) {
     setUserData(updatedProfileData);
     localStorage.setItem('userData', JSON.stringify(updatedProfileData));
     
+    const orderPriceResponse = await updateOrderPrice(orderInfo.basicInfo.orderId, orderInfo.basicInfo.totalCartPrice, userData.id);
+
     const updatedOrderInfo = {...orderInfo};
     updatedOrderInfo.basicInfo.orderStatus = ORDER_STATES_FOR_COURIER.COMPLETED;
 
