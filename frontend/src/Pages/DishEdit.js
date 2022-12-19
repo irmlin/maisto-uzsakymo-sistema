@@ -88,7 +88,7 @@ export default function DishEdit () {
                 
             <>
                 <motion.h2 className="header">
-                    Patiekalo sukūrimo langas
+                    Patiekalo redagavimo langas
                 </motion.h2>
                 <TableContainer>
                 <Table>
@@ -140,7 +140,7 @@ export default function DishEdit () {
                         type="number"
                         InputProps={{
                             inputProps: { 
-                                max: 100, min: 1 
+                                max: 100.00, min: 1.00 
                             }
                         }} 
                         value = {meal.price ? meal.price: 1}
