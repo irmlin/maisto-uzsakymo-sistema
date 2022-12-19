@@ -62,6 +62,14 @@ export const getRestaurantCompletedOrders = async (userId) => {
         return err.response;
     }
 }
+export const getClientOrders = async (userId) => {
+    try {
+        return await axiosInstance.get(`/orders/${userId}/client`);
+    } catch (err) {
+        console.error("Could not fetch courier's orders.", err.response);
+        return err.response;
+    }
+}
 
 export const makeOrder = async (orderData) => {
     try {

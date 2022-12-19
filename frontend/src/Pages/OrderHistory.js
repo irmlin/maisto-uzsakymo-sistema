@@ -15,7 +15,7 @@ import {
   TextField,
 } from "@mui/material";
 import { motion } from "framer-motion";
-import { getCourierCompletedOrders, getRestaurantCompletedOrders } from "../Services/OrderService";
+import { getCourierCompletedOrders, getClientOrders, getRestaurantCompletedOrders } from "../Services/OrderService";
 
 export default function OrderHistory() {
   const { userData } = useContext(UserContext);
@@ -33,7 +33,7 @@ export default function OrderHistory() {
     if (userData.role === ROLES.COURIER) {
       response = await getCourierCompletedOrders(userData.id);
     } else if (userData.role === ROLES.CLIENT) {
-      return;
+      response = await getClientOrders(userData.id);
     } else if (userData.role === ROLES.RESTAURANT) {
       response = await getRestaurantCompletedOrders(userData.id);
     }
@@ -192,22 +192,14 @@ export default function OrderHistory() {
                   <TableCell>Numeris</TableCell>
                   <TableCell>Būsena</TableCell>
                   <TableCell>Data</TableCell>
-                  <TableCell>Kaina</TableCell>
-                  <TableCell>Restoranas</TableCell>
-                  <TableCell>Restorano adresas</TableCell>
-                  <TableCell>Pristatymo adresas</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {orderData.map((order) => (
-                  <TableRow key={order.orderNumber}>
-                    <TableCell>{order.orderNumber}</TableCell>
-                    <TableCell>{order.orderState}</TableCell>
-                    <TableCell>{order.orderDate.toLocaleString()}</TableCell>
-                    <TableCell>{order.orderPrice}</TableCell>
-                    <TableCell>{order.restaurantName}</TableCell>
-                    <TableCell>{order.restaurantAddress}</TableCell>
-                    <TableCell>{order.recipientAddress}</TableCell>
+                {listToShow.map((order) => (
+                  <TableRow key={order.number}>
+                    <TableCell>{order.number}</TableCell>
+                    <TableCell>{order.status}</TableCell>
+                    <TableCell>{order.date.toLocaleString()}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

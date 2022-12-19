@@ -436,6 +436,19 @@ app.get('/orders/:orderId/get-one', async (request, response) => {
 		response.status(400).send({message: e.sqlMessage, success: false});
 	}
 })
+app.get('/orders/:orderId/client', async (request, response) => {
+	try{
+		let orderId = request.params.orderId;
+    let sql = 
+		`SELECT * from orders WHERE fk_client_id = ?`;
+    let result = await db.executeSqlQuery(sql, [orderId]);
+		response.status(200).send({success: true, order: result});
+	}
+	catch (e) {
+		console.log(e);
+		response.status(400).send({message: e.sqlMessage, success: false});
+	}
+})
 
 app.put('/orders/:orderId/cancel-courier', async (request, response) => {  
 	try{
