@@ -49,7 +49,7 @@ export default function OrderHistory() {
 
   useEffect(() => {
     fetchOrders();
-    setShow(orderData);
+    // setShow(orderData);
   }, [])
 
   function showError(message) {
@@ -91,7 +91,7 @@ export default function OrderHistory() {
   }
 
   const filterByData = () => {
-    let showList = orderData;
+    let showList = [...orderData];
     if (!dateFrom && !dateTo) {
       setShow(showList);
     }
@@ -199,7 +199,7 @@ export default function OrderHistory() {
                   <TableRow key={order.number}>
                     <TableCell>{order.number}</TableCell>
                     <TableCell>{order.status}</TableCell>
-                    <TableCell>{order.date.toLocaleString()}</TableCell>
+                    <TableCell>{transformDateString(order.date)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

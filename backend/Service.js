@@ -442,7 +442,7 @@ app.get('/orders/:orderId/client', async (request, response) => {
     let sql = 
 		`SELECT * from orders WHERE fk_client_id = ?`;
     let result = await db.executeSqlQuery(sql, [orderId]);
-		response.status(200).send({success: true, order: result});
+		response.status(200).send({success: true, orders: result});
 	}
 	catch (e) {
 		console.log(e);
